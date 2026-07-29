@@ -388,6 +388,12 @@ table { border-collapse: collapse; width: 100%; }
   padding: 5px 11px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s;
 }
 .btn-action-green:hover { background: #C9F2DA; }
+.btn-action-red {
+  display: inline-flex; align-items: center; gap: 5px; background: var(--color-danger-soft);
+  color: var(--color-danger); border: 1px solid transparent; border-radius: 999px;
+  padding: 5px 9px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s;
+}
+.btn-action-red:hover { background: #FBD5D5; }
 
 /* ===== Tabel responsif ala kartu di layar sempit ===== */
 @media (max-width: 700px) {
@@ -583,6 +589,20 @@ table { border-collapse: collapse; width: 100%; }
     e('path', { key: 2, d: 'M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2' }),
     e('rect', { key: 3, x: 6, y: 14, width: 12, height: 8 }),
   ]);
+  const IconDoor = svgIcon([
+    e('path', { key: 1, d: 'M3 21h18' }),
+    e('path', { key: 2, d: 'M6 21V4a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v17' }),
+    e('circle', { key: 3, cx: 14, cy: 12, r: 1 }),
+  ]);
+  const IconTrash = svgIcon([
+    e('polyline', { key: 1, points: '3 6 5 6 21 6' }),
+    e('path', { key: 2, d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' }),
+  ]);
+  const IconDownload = svgIcon([
+    e('path', { key: 1, d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
+    e('polyline', { key: 2, points: '7 10 12 15 17 10' }),
+    e('line', { key: 3, x1: 12, y1: 15, x2: 12, y2: 3 }),
+  ]);
 
   /* ============================== DATA ============================== */
   const DATA_PEGAWAI_CONTOH = [
@@ -718,6 +738,17 @@ table { border-collapse: collapse; width: 100%; }
   // Ganti dengan mekanisme login sungguhan (backend + hashing) sebelum dipakai produksi.
   const DEMO_LOGIN = { username: 'admin.simpatik', password: 'Lampung@2026' };
 
+  /* ============================== PEMINJAMAN RUANG ============================== */
+  const STORAGE_KEY_PEMINJAMAN_RUANG = 'simpatik_peminjaman_ruang_v1';
+  const DRIVE_PINJAM_RUANG_URL = 'https://drive.google.com/drive/folders/1ZXl0Y9IdhQAzXTGzrvItIXUUYELaWLU9?usp=sharing';
+  const DAFTAR_RUANGAN = ['Aula Kanwil', 'Ruang Rapat Utama Lt. 2', 'Ruang Rapat Divisi Pelayanan Hukum', 'Ruang Rapat Divisi Peraturan Perundang-undangan', 'Ruang VIP'];
+  // OPSIONAL: sinkron otomatis ke Google Sheets lewat Google Apps Script Web App (tanpa perlu
+  // simpan API key/password apa pun di kode ini — hanya URL endpoint publik dari skrip Anda
+  // sendiri). Kosongkan jika belum diaktifkan; aplikasi tetap berjalan penuh secara lokal.
+  // Cara aktifkan: buka spreadsheet PINJAM RUANG > Extensions > Apps Script, tempel skrip
+  // "doPost" yang menambah baris ke sheet, lalu Deploy > Web App (akses: Anyone), tempel URL-nya di sini.
+  const SHEET_WEBHOOK_PEMINJAMAN_RUANG = '';
+
   const BADGE_CLASS = {
     Aktif: 'badge-success', Cuti: 'badge-warning', Sakit: 'badge-danger', 'Dinas Luar': 'badge-info',
     Disetujui: 'badge-success', Menunggu: 'badge-warning', Ditolak: 'badge-danger',
@@ -735,6 +766,7 @@ table { border-collapse: collapse; width: 100%; }
     '#/kepegawaian/gaji-berkala': { title: 'Gaji Berkala', subtitle: 'Kepegawaian / Gaji Berkala' },
     '#/kepegawaian/inventaris-jf': { title: 'Inventaris Jabatan Fungsional', subtitle: 'Kepegawaian / Inventaris Jabatan Fungsional' },
     '#/kepegawaian/presensi': { title: 'Presensi', subtitle: 'Kepegawaian / Presensi' },
+    '#/fasilitas/peminjaman-ruang': { title: 'Peminjaman Ruang', subtitle: 'Fasilitas Kantor / Peminjaman Ruang' },
     '#/simoris': { title: 'SIMORIS', subtitle: 'Aplikasi Terintegrasi / SIMORIS' },
   };
 
@@ -781,6 +813,61 @@ table { border-collapse: collapse; width: 100%; }
 
   function simpanPengajuanKP(list) {
     localStorage.setItem(STORAGE_KEY_PENGAJUAN_KP, JSON.stringify(list));
+  }
+
+  /* ============================== HELPER PEMINJAMAN RUANG ============================== */
+  function muatPeminjamanRuang() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_PEMINJAMAN_RUANG);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function simpanPeminjamanRuang(list) {
+    localStorage.setItem(STORAGE_KEY_PEMINJAMAN_RUANG, JSON.stringify(list));
+  }
+
+  const NAMA_HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', "Jumat", 'Sabtu'];
+  function namaHari(tanggal) {
+    const d = new Date(tanggal);
+    return isNaN(d.getTime()) ? '-' : NAMA_HARI[d.getDay()];
+  }
+
+  // Cek tabrakan jadwal: ruangan sama + tanggal sama + rentang jam beririsan.
+  function cekTabrakanJadwal(daftar, calon, idKecuali) {
+    return daftar.find((b) => {
+      if (idKecuali && b.id === idKecuali) return false;
+      if (b.ruangan !== calon.ruangan || b.tanggal !== calon.tanggal) return false;
+      return calon.jamMulai < b.jamSelesai && calon.jamSelesai > b.jamMulai;
+    }) || null;
+  }
+
+  function unduhCSV(namaFile, header, rows) {
+    const escapeCsv = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+    const isi = [header.map(escapeCsv).join(',')].concat(rows.map((r) => r.map(escapeCsv).join(','))).join('\r\n');
+    const blob = new Blob(['\uFEFF' + isi], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = namaFile;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // Kirim satu baris ke Google Sheets via Apps Script Web App, jika URL-nya sudah dikonfigurasi.
+  // Tidak melempar error ke pengguna bila gagal/tidak dikonfigurasi — penyimpanan lokal tetap jalan.
+  async function sinkronKeSheet(webhookUrl, payload) {
+    if (!webhookUrl) return false;
+    try {
+      await fetch(webhookUrl, {
+        method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload),
+      });
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   function normalisasiHeader(h) {
@@ -1188,6 +1275,8 @@ table { border-collapse: collapse; width: 100%; }
           MENU_KEPEGAWAIAN.map((m) =>
             e(SidebarLink, { key: m.hash, href: m.hash, active: hash === m.hash, icon: m.icon, onClick: onClose }, m.label)
           ),
+          e('div', { className: 'sidebar-group-label' }, 'Fasilitas Kantor'),
+          e(SidebarLink, { href: '#/fasilitas/peminjaman-ruang', active: hash === '#/fasilitas/peminjaman-ruang', icon: IconDoor, onClick: onClose }, 'Peminjaman Ruang'),
           e('div', { className: 'sidebar-group-label' }, 'Aplikasi Terintegrasi'),
           e(SidebarLink, { href: '#/simoris', active: hash === '#/simoris', icon: IconFiles, external: true, onClick: onClose }, 'SIMORIS'),
           e(
@@ -2101,19 +2190,28 @@ table { border-collapse: collapse; width: 100%; }
         e('div', null, 'KENAIKAN GAJI BERKALA'),
         e('div', { style: { fontWeight: 400 } }, 'Nomor: ......../KP.04.03/.../2026')
       ),
-      e('p', null, `Berdasarkan Peraturan Pemerintah Nomor 5 Tahun 2024 tentang Peraturan Gaji Pegawai Negeri Sipil, dengan ini ditetapkan Kenaikan Gaji Berkala atas nama:`),
+      e('p', null, `Berdasarkan Peraturan Pemerintah Nomor 5 Tahun 2024 tentang Peraturan Gaji Pegawai Negeri Sipil, Kepala Kantor Wilayah Kementerian Hukum Lampung menetapkan:`),
+      e('p', { style: { margin: '10px 0 2px' } }, e('strong', null, 'Menimbang')),
+      e('p', { style: { margin: '0 0 8px', fontSize: 12.5 } }, `: bahwa Pegawai Negeri Sipil tersebut di bawah ini telah memenuhi syarat masa kerja golongan untuk diberikan Kenaikan Gaji Berkala sesuai ketentuan yang berlaku;`),
+      e('p', { style: { margin: '0 0 2px' } }, e('strong', null, 'Mengingat')),
+      e('p', { style: { margin: '0 0 8px', fontSize: 12.5 } }, `: Peraturan Pemerintah Nomor 5 Tahun 2024 tentang Peraturan Gaji Pegawai Negeri Sipil;`),
+      e('p', { style: { margin: '10px 0 2px', textAlign: 'center', fontWeight: 700 } }, 'MEMUTUSKAN'),
+      e('p', { style: { margin: '0 0 2px' } }, e('strong', null, 'Menetapkan')),
+      e('p', { style: { margin: '0 0 8px', fontSize: 12.5 } }, ': Memberikan Kenaikan Gaji Berkala kepada Pegawai Negeri Sipil:'),
       e('table', { style: { width: '100%', margin: '10px 0', fontSize: 13 } },
         e('tbody', null,
           e('tr', null, e('td', { style: { width: 160 } }, 'Nama'), e('td', null, `: ${pegawai.nama}`)),
           e('tr', null, e('td', null, 'NIP'), e('td', null, `: ${pegawai.nip}`)),
           e('tr', null, e('td', null, 'Jabatan'), e('td', null, `: ${pegawai.jabatan}`)),
+          e('tr', null, e('td', null, 'Unit Kerja'), e('td', null, `: ${pegawai.unit}`)),
           e('tr', null, e('td', null, 'Golongan Ruang'), e('td', null, `: ${pegawai.golongan}`)),
           e('tr', null, e('td', null, 'Gaji Pokok Lama'), e('td', null, `: ${formatRupiah(info.gajiSaatIni)}`)),
           e('tr', null, e('td', null, 'Gaji Pokok Baru'), e('td', null, `: ${formatRupiah(info.gajiSetelahKGB)}`)),
+          e('tr', null, e('td', null, 'Kenaikan Gaji Berkala Berikutnya'), e('td', null, `: ${tmt}`)),
           e('tr', null, e('td', null, 'Terhitung Mulai Tanggal'), e('td', null, `: ${tmt}`))
         )
       ),
-      e('p', { style: { marginTop: 14 } }, 'Demikian surat keputusan ini dibuat untuk dilaksanakan sebagaimana mestinya.'),
+      e('p', { style: { marginTop: 14, fontSize: 12.5 } }, 'Keputusan ini mulai berlaku pada tanggal ditetapkan, dengan ketentuan apabila di kemudian hari terdapat kekeliruan dalam keputusan ini akan diadakan perbaikan sebagaimana mestinya.'),
       e('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 40 } },
         e('div', { style: { textAlign: 'center' } },
           e('div', null, `Bandar Lampung, ${tglSk}`),
@@ -2123,6 +2221,200 @@ table { border-collapse: collapse; width: 100%; }
           e('div', null, 'NIP 19681118 199103 1 001')
         )
       )
+    );
+  }
+
+  /* ============================== FORM PEMINJAMAN RUANG ============================== */
+  function PeminjamanRuangForm({ initial, daftar, onClose, onSave }) {
+    const kosong = { ruangan: DAFTAR_RUANGAN[0], tanggal: '', jamMulai: '', jamSelesai: '', peminjam: '', noSurat: '', keterangan: '' };
+    const [form, setForm] = useState(initial || kosong);
+    const [error, setError] = useState('');
+    const isEdit = !!initial;
+
+    function ubah(field, value) { setForm((f) => ({ ...f, [field]: value })); setError(''); }
+
+    function handleSubmit(ev) {
+      ev.preventDefault();
+      if (!form.tanggal || !form.jamMulai || !form.jamSelesai || !form.peminjam.trim() || !form.noSurat.trim()) {
+        setError('Semua kolom wajib diisi.'); return;
+      }
+      if (form.jamSelesai <= form.jamMulai) {
+        setError('Jam selesai harus setelah jam mulai.'); return;
+      }
+      const bentrok = cekTabrakanJadwal(daftar, form, isEdit ? initial.id : null);
+      if (bentrok) {
+        setError(`Jadwal bentrok dengan peminjaman "${bentrok.peminjam}" (${bentrok.jamMulai}\u2013${bentrok.jamSelesai}) di ruangan yang sama pada tanggal tersebut.`);
+        return;
+      }
+      onSave(form, initial || null);
+    }
+
+    return e(
+      Modal,
+      { title: isEdit ? 'Edit Peminjaman Ruang' : 'Ajukan Peminjaman Ruang', onClose },
+      e(
+        'form',
+        { onSubmit: handleSubmit },
+        error && e('div', { className: 'login-error' }, error),
+        e(
+          'div',
+          { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 } },
+          e(
+            'div',
+            null,
+            e('label', { style: fieldStyle() }, 'Nama Ruangan'),
+            e('select', { className: 'select-filter', style: { width: '100%' }, value: form.ruangan, onChange: (ev) => ubah('ruangan', ev.target.value) },
+              DAFTAR_RUANGAN.map((r) => e('option', { key: r, value: r }, r)))
+          ),
+          e('div', null, e('label', { style: fieldStyle() }, 'Tanggal'), e('div', { className: 'input-search' }, e('input', { type: 'date', value: form.tanggal, onChange: (ev) => ubah('tanggal', ev.target.value), required: true }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Jam Mulai'), e('div', { className: 'input-search' }, e('input', { type: 'time', value: form.jamMulai, onChange: (ev) => ubah('jamMulai', ev.target.value), required: true }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Jam Selesai'), e('div', { className: 'input-search' }, e('input', { type: 'time', value: form.jamSelesai, onChange: (ev) => ubah('jamSelesai', ev.target.value), required: true }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Nama Peminjam'), e('div', { className: 'input-search' }, e('input', { value: form.peminjam, onChange: (ev) => ubah('peminjam', ev.target.value), required: true }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'No. Surat/Nota Dinas'), e('div', { className: 'input-search' }, e('input', { value: form.noSurat, onChange: (ev) => ubah('noSurat', ev.target.value), placeholder: 'ND-.../KP.../2026', required: true })))
+        ),
+        e('div', { style: { marginTop: 12 } }, e('label', { style: fieldStyle() }, 'Keterangan (opsional)'), e('div', { className: 'input-search', style: { width: '100%' } }, e('input', { value: form.keterangan, onChange: (ev) => ubah('keterangan', ev.target.value), placeholder: 'Cth. Rapat koordinasi triwulan' }))),
+        e(
+          'div',
+          { style: { display: 'flex', gap: 10, marginTop: 16 } },
+          e('button', { type: 'submit', className: 'btn btn-primary' }, e(IconCheck, { size: 15 }), isEdit ? 'Simpan Perubahan' : 'Simpan Peminjaman'),
+          e('button', { type: 'button', className: 'btn btn-outline', onClick: onClose }, 'Batal')
+        )
+      )
+    );
+  }
+
+  /* ============================== PEMINJAMAN RUANG (HALAMAN) ============================== */
+  function PeminjamanRuang({ showToast }) {
+    const [daftar, setDaftar] = useState(() => muatPeminjamanRuang());
+    const [formState, setFormState] = useState(null); // { initial } | null
+    const [query, setQuery] = useState('');
+    const [filterRuangan, setFilterRuangan] = useState('Semua');
+
+    const terurut = useMemo(() => [...daftar].sort((a, b) => (a.tanggal + a.jamMulai).localeCompare(b.tanggal + b.jamMulai)), [daftar]);
+    const tampil = terurut.filter((b) => {
+      const q = query.toLowerCase();
+      const cocokQuery = !q || (b.peminjam || '').toLowerCase().includes(q) || (b.noSurat || '').toLowerCase().includes(q) || (b.ruangan || '').toLowerCase().includes(q);
+      const cocokRuangan = filterRuangan === 'Semua' || b.ruangan === filterRuangan;
+      return cocokQuery && cocokRuangan;
+    });
+
+    function handleSave(data, original) {
+      setDaftar((prev) => {
+        let next;
+        if (original) {
+          next = prev.map((b) => (b.id === original.id ? { ...b, ...data } : b));
+        } else {
+          next = [...prev, { ...data, id: `pr-${Date.now()}` }];
+        }
+        simpanPeminjamanRuang(next);
+        return next;
+      });
+      sinkronKeSheet(SHEET_WEBHOOK_PEMINJAMAN_RUANG, { aksi: original ? 'edit' : 'tambah', ...data });
+      showToast(original ? 'Perubahan jadwal peminjaman disimpan.' : `Peminjaman ${data.ruangan} tersimpan.`);
+      setFormState(null);
+    }
+
+    function handleDelete(b) {
+      if (!window.confirm(`Hapus jadwal peminjaman "${b.ruangan}" oleh ${b.peminjam} pada ${b.tanggal}?`)) return;
+      setDaftar((prev) => {
+        const next = prev.filter((x) => x.id !== b.id);
+        simpanPeminjamanRuang(next);
+        return next;
+      });
+      sinkronKeSheet(SHEET_WEBHOOK_PEMINJAMAN_RUANG, { aksi: 'hapus', id: b.id });
+      showToast('Jadwal peminjaman dihapus.');
+    }
+
+    function handleEkspor() {
+      unduhCSV(
+        `peminjaman-ruang-${new Date().toISOString().slice(0, 10)}.csv`,
+        ['Ruangan', 'Hari', 'Tanggal', 'Jam Mulai', 'Jam Selesai', 'Nama Peminjam', 'No. Surat/Nota Dinas', 'Keterangan'],
+        terurut.map((b) => [b.ruangan, namaHari(b.tanggal), b.tanggal, b.jamMulai, b.jamSelesai, b.peminjam, b.noSurat, b.keterangan || ''])
+      );
+      showToast('CSV diunduh \u2014 impor/paste ke spreadsheet PINJAM RUANG di Drive.');
+    }
+
+    return e(
+      'div',
+      null,
+      e(
+        'div',
+        { className: 'page-header' },
+        e('div', null, e('h1', null, 'Peminjaman Ruang'), e('p', null, 'Jadwal pemakaian ruangan Kanwil Kemenkum Lampung \u2014 sistem otomatis menolak jadwal yang bentrok.')),
+        e('button', { className: 'btn btn-primary', onClick: () => setFormState({ initial: null }) }, e(IconPlus, { size: 15 }), 'Ajukan Peminjaman')
+      ),
+      e(
+        'div',
+        { className: 'import-note' },
+        'Data tersimpan otomatis di perangkat ini (localStorage). Untuk menyalin ke spreadsheet ',
+        e('strong', null, 'PINJAM RUANG'),
+        ' di Drive, gunakan tombol ',
+        e('strong', null, 'Ekspor CSV'),
+        ' lalu impor/tempel hasilnya ke sheet, atau ',
+        e('a', { href: DRIVE_PINJAM_RUANG_URL, target: '_blank', rel: 'noopener noreferrer' }, 'buka folder PINJAM RUANG'),
+        ' untuk mengelola manual. ',
+        SHEET_WEBHOOK_PEMINJAMAN_RUANG
+          ? 'Sinkron otomatis ke Google Sheets sudah aktif via Apps Script.'
+          : 'Sinkron otomatis dua-arah ke Google Sheets butuh Apps Script Web App yang Anda deploy sendiri dari sheet tersebut (lihat komentar SHEET_WEBHOOK_PEMINJAMAN_RUANG di kode) \u2014 belum dikonfigurasi saat ini, jadi datanya perlu diekspor/ditempel manual.'
+      ),
+      e(
+        'div',
+        { className: 'filter-bar' },
+        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari peminjam, ruangan, atau no. surat...', value: query, onChange: (ev) => setQuery(ev.target.value) })),
+        e(
+          'select',
+          { className: 'select-filter', value: filterRuangan, onChange: (ev) => setFilterRuangan(ev.target.value) },
+          ['Semua', ...DAFTAR_RUANGAN].map((r) => e('option', { key: r, value: r }, r))
+        ),
+        e('button', { className: 'btn btn-outline', onClick: handleEkspor }, e(IconDownload, { size: 15 }), 'Ekspor CSV')
+      ),
+      e(
+        'div',
+        { className: 'card' },
+        e(
+          'div',
+          { className: 'table-wrap' },
+          e(
+            'table',
+            { className: 'data-table' },
+            e(
+              'thead',
+              null,
+              e(
+                'tr',
+                null,
+                e('th', null, 'No'), e('th', null, 'Ruangan'), e('th', null, 'Hari, Tanggal'), e('th', null, 'Jam'),
+                e('th', null, 'Peminjam'), e('th', null, 'No. Surat/Nota Dinas'), e('th', null, '')
+              )
+            ),
+            e(
+              'tbody',
+              null,
+              tampil.length
+                ? tampil.map((b, i) =>
+                    e(
+                      'tr',
+                      { key: b.id },
+                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
+                      e('td', { 'data-label': 'Ruangan', style: { fontWeight: 600 } }, b.ruangan),
+                      e('td', { 'data-label': 'Hari, Tanggal' }, `${namaHari(b.tanggal)}, ${b.tanggal}`),
+                      e('td', { 'data-label': 'Jam' }, `${b.jamMulai}\u2013${b.jamSelesai}`),
+                      e('td', { 'data-label': 'Peminjam' }, b.peminjam),
+                      e('td', { 'data-label': 'No. Surat/Nota Dinas' }, b.noSurat),
+                      e(
+                        'td',
+                        { 'data-label': '', style: { display: 'flex', gap: 6 } },
+                        e('button', { className: 'btn-action-green', onClick: () => setFormState({ initial: b }), title: 'Edit' }, e(IconEdit, { size: 13 })),
+                        e('button', { className: 'btn-action-red', onClick: () => handleDelete(b), title: 'Hapus' }, e(IconTrash, { size: 13 }))
+                      )
+                    )
+                  )
+                : e('tr', null, e('td', { colSpan: 7, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Belum ada jadwal peminjaman ruang.'))
+            )
+          )
+        )
+      ),
+      formState && e(PeminjamanRuangForm, { initial: formState.initial, daftar, onClose: () => setFormState(null), onSave: handleSave })
     );
   }
 
@@ -2290,6 +2582,7 @@ table { border-collapse: collapse; width: 100%; }
     else if (hash === '#/kepegawaian/gaji-berkala') page = e(GajiBerkala, { pegawai: pegawaiState.data });
     else if (hash === '#/kepegawaian/inventaris-jf') page = e(InventarisJF, { pegawai: pegawaiState.data, onSavePegawai: handleSavePegawai, showToast });
     else if (hash === '#/kepegawaian/presensi') page = e(Presensi);
+    else if (hash === '#/fasilitas/peminjaman-ruang') page = e(PeminjamanRuang, { showToast });
     else if (hash === '#/simoris') page = e(Simoris);
     else page = e(NotFound);
 
