@@ -370,6 +370,39 @@ table { border-collapse: collapse; width: 100%; }
 .detail-row span:first-child { color: var(--color-text-muted); }
 .detail-row span:last-child { font-weight: 600; text-align: right; }
 .row-link { color: var(--color-primary-dark); font-weight: 600; font-size: 12.5px; }
+
+/* ===== Tombol aksi hijau (mis. Kelola/Edit di tabel) ===== */
+.btn-action-green {
+  display: inline-flex; align-items: center; gap: 5px; background: var(--color-success-soft);
+  color: var(--color-success); border: 1px solid transparent; border-radius: 999px;
+  padding: 5px 11px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s;
+}
+.btn-action-green:hover { background: #C9F2DA; }
+
+/* ===== Tabel responsif ala kartu di layar sempit ===== */
+@media (max-width: 700px) {
+  .data-table thead { display: none; }
+  .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+  .data-table { border: none; }
+  .data-table tr { border: 1px solid var(--color-border); border-radius: 12px; margin-bottom: 10px; padding: 4px 14px; background: var(--color-surface); }
+  .data-table td { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--color-border); text-align: right; }
+  .data-table td:last-child { border-bottom: none; }
+  .data-table td::before { content: attr(data-label); font-size: 11.5px; font-weight: 700; color: var(--color-text-faint); text-align: left; text-transform: uppercase; letter-spacing: .02em; }
+  .data-table td:empty::before { content: none; }
+  .table-wrap { overflow-x: visible; }
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .filter-bar .select-filter { width: 100%; }
+  .page-header { flex-direction: column; align-items: stretch; }
+  .page-header > div:last-child { display: flex; flex-direction: column; }
+}
+
+/* ===== Cetak SK (print) ===== */
+.printable-sk { display: none; }
+@media print {
+  body * { visibility: hidden; }
+  .printable-sk, .printable-sk * { visibility: visible; }
+  .printable-sk { display: block; position: absolute; top: 0; left: 0; width: 100%; padding: 30px; }
+}
   </style>
 </head>
 <body>
@@ -1384,14 +1417,14 @@ table { border-collapse: collapse; width: 100%; }
                     e(
                       'tr',
                       { key: i },
-                      e('td', { style: { color: 'var(--color-text-faint)' } }, i + 1),
-                      e('td', null, e('div', { className: 'name-cell' }, e(AvatarChip, { nama: p.nama }), e('span', { style: { fontWeight: 600 } }, p.nama))),
-                      e('td', null, p.nip),
-                      e('td', null, p.jabatan),
-                      e('td', null, p.golongan),
-                      e('td', null, p.unit),
-                      e('td', null, e(Badge, { status: p.status })),
-                      e('td', null, e('button', { className: 'row-link', style: { background: 'none', border: 'none' }, onClick: () => setDetailPegawai(p) }, 'Detail'))
+                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
+                      e('td', { 'data-label': 'Nama Pegawai' }, e('div', { className: 'name-cell' }, e(AvatarChip, { nama: p.nama }), e('span', { style: { fontWeight: 600 } }, p.nama))),
+                      e('td', { 'data-label': 'NIP' }, p.nip),
+                      e('td', { 'data-label': 'Jabatan' }, p.jabatan),
+                      e('td', { 'data-label': 'Golongan' }, p.golongan),
+                      e('td', { 'data-label': 'Unit Kerja' }, p.unit),
+                      e('td', { 'data-label': 'Status' }, e(Badge, { status: p.status })),
+                      e('td', { 'data-label': '' }, e('button', { className: 'btn-action-green', onClick: () => setDetailPegawai(p) }, e(IconEdit, { size: 13 }), 'Detail'))
                     )
                   )
                 : e('tr', null, e('td', { colSpan: 8, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada pegawai yang cocok dengan pencarian.'))
@@ -1439,6 +1472,11 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   function Cuti() {
+    const [query, setQuery] = useState('');
+    const filtered = useMemo(
+      () => DATA_CUTI.filter((c) => !query || (c.nama || '').toLowerCase().includes(query.toLowerCase()) || (c.jenis || '').toLowerCase().includes(query.toLowerCase())),
+      [query]
+    );
     return e(
       'div',
       null,
@@ -1450,6 +1488,11 @@ table { border-collapse: collapse; width: 100%; }
       ),
       e(
         'div',
+        { className: 'filter-bar' },
+        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama atau jenis cuti...', value: query, onChange: (ev) => setQuery(ev.target.value) }))
+      ),
+      e(
+        'div',
         { className: 'card' },
         e(
           'div',
@@ -1457,21 +1500,24 @@ table { border-collapse: collapse; width: 100%; }
           e(
             'table',
             { className: 'data-table' },
-            e('thead', null, e('tr', null, e('th', null, 'Nama Pegawai'), e('th', null, 'Jenis Cuti'), e('th', null, 'Mulai'), e('th', null, 'Selesai'), e('th', null, 'Status'))),
+            e('thead', null, e('tr', null, e('th', null, 'No'), e('th', null, 'Nama Pegawai'), e('th', null, 'Jenis Cuti'), e('th', null, 'Mulai'), e('th', null, 'Selesai'), e('th', null, 'Status'))),
             e(
               'tbody',
               null,
-              DATA_CUTI.map((c, i) =>
-                e(
-                  'tr',
-                  { key: i },
-                  e('td', { style: { fontWeight: 600 } }, c.nama),
-                  e('td', null, c.jenis),
-                  e('td', null, c.mulai),
-                  e('td', null, c.selesai),
-                  e('td', null, e(Badge, { status: c.status }))
-                )
-              )
+              filtered.length
+                ? filtered.map((c, i) =>
+                    e(
+                      'tr',
+                      { key: i },
+                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
+                      e('td', { 'data-label': 'Nama Pegawai', style: { fontWeight: 600 } }, c.nama),
+                      e('td', { 'data-label': 'Jenis Cuti' }, c.jenis),
+                      e('td', { 'data-label': 'Mulai' }, c.mulai),
+                      e('td', { 'data-label': 'Selesai' }, c.selesai),
+                      e('td', { 'data-label': 'Status' }, e(Badge, { status: c.status }))
+                    )
+                  )
+                : e('tr', null, e('td', { colSpan: 6, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada data yang cocok.'))
             )
           )
         )
@@ -1480,12 +1526,14 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   function KenaikanPangkat({ pegawai, showToast }) {
+    const [tab, setTab] = useState('pengajuan');
     const [pengajuan, setPengajuan] = useState(() => muatPengajuanKP());
     const [formOpen, setFormOpen] = useState(false);
     const [namaTerpilih, setNamaTerpilih] = useState('');
     const [pak, setPak] = useState('');
     const [periode, setPeriode] = useState(PERIODE_KP_OPTIONS[0]);
     const [skTerakhir, setSkTerakhir] = useState('');
+    const [query, setQuery] = useState('');
 
     const pegawaiTerpilih = pegawai.find((p) => p.nama === namaTerpilih);
     const checklist = [
@@ -1522,6 +1570,7 @@ table { border-collapse: collapse; width: 100%; }
     }
 
     const semuaBaris = [...pengajuan, ...DATA_KENAIKAN_PANGKAT];
+    const barisTersaring = semuaBaris.filter((k) => !query || (k.nama || '').toLowerCase().includes(query.toLowerCase()));
 
     return e(
       'div',
@@ -1529,149 +1578,163 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'page-header' },
-        e('div', null, e('h1', null, 'Kenaikan Pangkat'), e('p', null, 'Pantau status usulan kenaikan pangkat pegawai per periode.')),
-        e('button', { className: 'btn btn-primary', onClick: () => setFormOpen((v) => !v) }, e(IconPlus, { size: 15 }), formOpen ? 'Tutup Formulir' : 'Ajukan Kenaikan Pangkat')
+        e('div', null, e('h1', null, 'Kenaikan Pangkat'), e('p', null, 'Pantau usulan, riwayat, dan kandidat kenaikan pangkat pegawai.')),
+        tab === 'pengajuan' &&
+          e('button', { className: 'btn btn-primary', onClick: () => setFormOpen((v) => !v) }, e(IconPlus, { size: 15 }), formOpen ? 'Tutup Formulir' : 'Ajukan Kenaikan Pangkat')
       ),
-      formOpen &&
+      e(
+        'div',
+        { className: 'tab-bar' },
+        e('button', { className: `tab-btn ${tab === 'pengajuan' ? 'active' : ''}`, onClick: () => setTab('pengajuan') }, 'Pengajuan & Riwayat'),
+        e('button', { className: `tab-btn ${tab === 'kandidat' ? 'active' : ''}`, onClick: () => setTab('kandidat') }, e(IconAward, { size: 14 }), 'Kandidat Naik Pangkat')
+      ),
+      tab === 'pengajuan' &&
         e(
-          'form',
-          { className: 'card card-pad', style: { marginBottom: 16 }, onSubmit: handleSubmit },
-          e('div', { className: 'section-title' }, 'Formulir Pengajuan Kenaikan Pangkat'),
-          e('div', { className: 'section-subtitle' }, 'Isi 4 data wajib berikut. Berkas fisik (PAK & SK) diunggah terpisah lewat folder Drive di bawah.'),
-          e(
-            'div',
-            { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginTop: 16 } },
+          React.Fragment,
+          null,
+          formOpen &&
             e(
-              'div',
-              null,
-              e('label', { style: { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Nama Pegawai'),
+              'form',
+              { className: 'card card-pad', style: { marginBottom: 16 }, onSubmit: handleSubmit },
+              e('div', { className: 'section-title' }, 'Formulir Pengajuan Kenaikan Pangkat'),
+              e('div', { className: 'section-subtitle' }, 'Isi 4 data wajib berikut. Berkas fisik (PAK & SK) diunggah terpisah lewat folder Drive di bawah.'),
               e(
-                'select',
-                { className: 'select-filter', style: { width: '100%' }, value: namaTerpilih, onChange: (ev) => setNamaTerpilih(ev.target.value), required: true },
-                e('option', { value: '' }, '— Pilih pegawai —'),
-                pegawai.map((p, i) => e('option', { key: i, value: p.nama }, `${p.nama} (${p.golongan})`))
-              )
-            ),
-            e(
-              'div',
-              null,
-              e('label', { style: { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Data PAK Terakhir'),
-              e('div', { className: 'input-search', style: { width: '100%' } }, e('input', { placeholder: 'No. & tanggal PAK terakhir', value: pak, onChange: (ev) => setPak(ev.target.value) }))
-            ),
-            e(
-              'div',
-              null,
-              e('label', { style: { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Periode Kenaikan Pangkat'),
-              e(
-                'select',
-                { className: 'select-filter', style: { width: '100%' }, value: periode, onChange: (ev) => setPeriode(ev.target.value) },
-                PERIODE_KP_OPTIONS.map((p) => e('option', { key: p, value: p }, p))
-              )
-            ),
-            e(
-              'div',
-              null,
-              e('label', { style: { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'SK Pangkat Terakhir'),
-              e('div', { className: 'input-search', style: { width: '100%' } }, e('input', { placeholder: 'No. SK pangkat terakhir', value: skTerakhir, onChange: (ev) => setSkTerakhir(ev.target.value) }))
-            )
-          ),
-          e(
-            'div',
-            { style: { marginTop: 16, display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'center' } },
-            e(
-              'div',
-              { style: { display: 'flex', gap: 14, flexWrap: 'wrap' } },
-              checklist.map((c, i) =>
+                'div',
+                { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginTop: 16 } },
                 e(
-                  'span',
-                  { key: i, style: { fontSize: 12, color: c.ok ? 'var(--color-success)' : 'var(--color-text-faint)', display: 'inline-flex', alignItems: 'center', gap: 5 } },
-                  e(IconCheck, { size: 13 }),
-                  c.label
+                  'div',
+                  null,
+                  e('label', { style: fieldStyle() }, 'Nama Pegawai'),
+                  e(
+                    'select',
+                    { className: 'select-filter', style: { width: '100%' }, value: namaTerpilih, onChange: (ev) => setNamaTerpilih(ev.target.value), required: true },
+                    e('option', { value: '' }, '— Pilih pegawai —'),
+                    pegawai.map((p, i) => e('option', { key: i, value: p.nama }, `${p.nama} (${p.golongan})`))
+                  )
+                ),
+                e(
+                  'div',
+                  null,
+                  e('label', { style: fieldStyle() }, 'Data PAK Terakhir'),
+                  e('div', { className: 'input-search', style: { width: '100%' } }, e('input', { placeholder: 'No. & tanggal PAK terakhir', value: pak, onChange: (ev) => setPak(ev.target.value) }))
+                ),
+                e(
+                  'div',
+                  null,
+                  e('label', { style: fieldStyle() }, 'Periode Kenaikan Pangkat'),
+                  e(
+                    'select',
+                    { className: 'select-filter', style: { width: '100%' }, value: periode, onChange: (ev) => setPeriode(ev.target.value) },
+                    PERIODE_KP_OPTIONS.map((p) => e('option', { key: p, value: p }, p))
+                  )
+                ),
+                e(
+                  'div',
+                  null,
+                  e('label', { style: fieldStyle() }, 'SK Pangkat Terakhir'),
+                  e('div', { className: 'input-search', style: { width: '100%' } }, e('input', { placeholder: 'No. SK pangkat terakhir', value: skTerakhir, onChange: (ev) => setSkTerakhir(ev.target.value) }))
+                )
+              ),
+              e(
+                'div',
+                { style: { marginTop: 16, display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'center' } },
+                e(
+                  'div',
+                  { style: { display: 'flex', gap: 14, flexWrap: 'wrap' } },
+                  checklist.map((c, i) =>
+                    e(
+                      'span',
+                      { key: i, style: { fontSize: 12, color: c.ok ? 'var(--color-success)' : 'var(--color-text-faint)', display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                      e(IconCheck, { size: 13 }),
+                      c.label
+                    )
+                  )
+                )
+              ),
+              e(
+                'div',
+                { className: 'import-note' },
+                'Kelengkapan berkas (PAK, SK, dsb.) akan diverifikasi ulang berdasarkan ',
+                e('strong', null, 'dossier checklist'),
+                ' yang menyusul dari Anda. Cek kelengkapan dokumen di ',
+                e('a', { href: SIMPEG_DOSSIER_URL, target: '_blank', rel: 'noopener noreferrer' }, 'dossier pegawai SIMPEG'),
+                ' (login memakai akun SIMPEG Anda sendiri \u2014 kredensial tidak disimpan di aplikasi ini demi keamanan). Berkas fisik/scan hasil pengajuan diunggah manual ke ',
+                e('a', { href: DRIVE_KENAIKAN_PANGKAT_URL, target: '_blank', rel: 'noopener noreferrer' }, 'folder Drive Kenaikan Pangkat'),
+                ' — aplikasi satu-file ini belum terhubung ke Google Drive API maupun API SIMPEG, jadi kedua langkah tersebut dilakukan manual di tab baru.'
+              ),
+              e(
+                'div',
+                { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
+                e('button', { type: 'submit', className: 'btn btn-primary', disabled: !lengkap }, e(IconCheck, { size: 15 }), 'Simpan Pengajuan'),
+                e(
+                  'a',
+                  { href: SIMPEG_DOSSIER_URL, target: '_blank', rel: 'noopener noreferrer', className: 'btn btn-outline' },
+                  e(IconShield, { size: 15 }),
+                  'Cek Dossier SIMPEG'
+                ),
+                e(
+                  'a',
+                  { href: DRIVE_KENAIKAN_PANGKAT_URL, target: '_blank', rel: 'noopener noreferrer', className: 'btn btn-outline' },
+                  e(IconExternal, { size: 15 }),
+                  'Buka Folder Drive'
                 )
               )
-            )
-          ),
-          e(
-            'div',
-            { className: 'import-note' },
-            'Kelengkapan berkas (PAK, SK, dsb.) akan diverifikasi ulang berdasarkan ',
-            e('strong', null, 'dossier checklist'),
-            ' yang menyusul dari Anda. Cek kelengkapan dokumen di ',
-            e('a', { href: SIMPEG_DOSSIER_URL, target: '_blank', rel: 'noopener noreferrer' }, 'dossier pegawai SIMPEG'),
-            ' (login memakai akun SIMPEG Anda sendiri \u2014 kredensial tidak disimpan di aplikasi ini demi keamanan). Berkas fisik/scan hasil pengajuan diunggah manual ke ',
-            e('a', { href: DRIVE_KENAIKAN_PANGKAT_URL, target: '_blank', rel: 'noopener noreferrer' }, 'folder Drive Kenaikan Pangkat'),
-            ' — aplikasi satu-file ini belum terhubung ke Google Drive API maupun API SIMPEG, jadi kedua langkah tersebut dilakukan manual di tab baru.'
-          ),
-          e(
-            'div',
-            { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
-            e('button', { type: 'submit', className: 'btn btn-primary', disabled: !lengkap }, e(IconCheck, { size: 15 }), 'Simpan Pengajuan'),
-            e(
-              'a',
-              { href: SIMPEG_DOSSIER_URL, target: '_blank', rel: 'noopener noreferrer', className: 'btn btn-outline' },
-              e(IconShield, { size: 15 }),
-              'Cek Dossier SIMPEG'
             ),
+          e(
+            'div',
+            { className: 'filter-bar' },
+            e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama pegawai...', value: query, onChange: (ev) => setQuery(ev.target.value) }))
+          ),
+          e(
+            'div',
+            { className: 'card' },
             e(
-              'a',
-              { href: DRIVE_KENAIKAN_PANGKAT_URL, target: '_blank', rel: 'noopener noreferrer', className: 'btn btn-outline' },
-              e(IconExternal, { size: 15 }),
-              'Buka Folder Drive'
+              'div',
+              { className: 'table-wrap' },
+              e(
+                'table',
+                { className: 'data-table' },
+                e('thead', null, e('tr', null, e('th', null, 'No'), e('th', null, 'Nama Pegawai'), e('th', null, 'Golongan Lama'), e('th', null, 'Golongan Baru'), e('th', null, 'Periode'), e('th', null, 'Status'))),
+                e(
+                  'tbody',
+                  null,
+                  barisTersaring.length
+                    ? barisTersaring.map((k, i) =>
+                        e(
+                          'tr',
+                          { key: i },
+                          e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
+                          e('td', { 'data-label': 'Nama Pegawai', style: { fontWeight: 600 } }, k.nama),
+                          e('td', { 'data-label': 'Golongan Lama' }, k.golonganLama),
+                          e('td', { 'data-label': 'Golongan Baru' }, k.golonganBaru),
+                          e('td', { 'data-label': 'Periode' }, k.periode),
+                          e('td', { 'data-label': 'Status' }, e(Badge, { status: k.status }))
+                        )
+                      )
+                    : e('tr', null, e('td', { colSpan: 6, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada data yang cocok.'))
+                )
+              )
             )
           )
         ),
-      e(
-        'div',
-        { className: 'card' },
-        e(
-          'div',
-          { className: 'table-wrap' },
-          e(
-            'table',
-            { className: 'data-table' },
-            e('thead', null, e('tr', null, e('th', null, 'Nama Pegawai'), e('th', null, 'Golongan Lama'), e('th', null, 'Golongan Baru'), e('th', null, 'Periode'), e('th', null, 'Status'))),
-            e(
-              'tbody',
-              null,
-              semuaBaris.map((k, i) =>
-                e(
-                  'tr',
-                  { key: i },
-                  e('td', { style: { fontWeight: 600 } }, k.nama),
-                  e('td', null, k.golonganLama),
-                  e('td', null, k.golonganBaru),
-                  e('td', null, k.periode),
-                  e('td', null, e(Badge, { status: k.status }))
-                )
-              )
-            )
-          )
-        )
-      )
+      tab === 'kandidat' && e(KandidatNaikPangkatTab, { pegawai })
     );
   }
 
-  /* ============================== KANDIDAT NAIK PANGKAT ============================== */
-  function KandidatNaikPangkat({ pegawai }) {
+  /* ============================== KANDIDAT NAIK PANGKAT (TAB) ============================== */
+  function KandidatNaikPangkatTab({ pegawai }) {
     const [tampilkanSemua, setTampilkanSemua] = useState(false);
+    const [query, setQuery] = useState('');
 
-    const baris = useMemo(() => {
-      return pegawai.map((p) => ({ p, k: kelayakanPangkat(p) }));
-    }, [pegawai]);
-
+    const baris = useMemo(() => pegawai.map((p) => ({ p, k: kelayakanPangkat(p) })), [pegawai]);
     const siap = baris.filter((b) => b.k.status === 'Siap Diusulkan');
-    const tampil = tampilkanSemua ? baris : siap;
+    const dasar = tampilkanSemua ? baris : siap;
+    const tampil = dasar.filter((b) => !query || (b.p.nama || '').toLowerCase().includes(query.toLowerCase()));
     const belumLengkap = baris.filter((b) => b.k.status === 'Data Belum Lengkap').length;
 
     return e(
       'div',
       null,
-      e(
-        'div',
-        { className: 'page-header' },
-        e('div', null, e('h1', null, 'Kandidat Naik Pangkat'), e('p', null, 'Daftar pegawai yang telah memenuhi syarat masa kerja untuk diusulkan naik pangkat.')),
-        e('button', { className: 'btn btn-outline', onClick: () => setTampilkanSemua((v) => !v) }, tampilkanSemua ? 'Tampilkan yang Siap Saja' : 'Tampilkan Semua Pegawai')
-      ),
       e(
         'div',
         { className: 'import-note' },
@@ -1697,69 +1760,9 @@ table { border-collapse: collapse; width: 100%; }
       ),
       e(
         'div',
-        { className: 'card' },
-        e(
-          'div',
-          { className: 'table-wrap' },
-          e(
-            'table',
-            { className: 'data-table' },
-            e(
-              'thead',
-              null,
-              e('tr', null, e('th', null, 'Nama'), e('th', null, 'Golongan'), e('th', null, 'Jenis'), e('th', null, 'TMT Pangkat'), e('th', null, 'Masa Kerja'), e('th', null, 'Syarat'), e('th', null, 'Status'))
-            ),
-            e(
-              'tbody',
-              null,
-              tampil.length
-                ? tampil.map(({ p, k }, i) =>
-                    e(
-                      'tr',
-                      { key: i },
-                      e('td', { style: { fontWeight: 600 } }, p.nama),
-                      e('td', null, p.golongan),
-                      e('td', null, k.jenis),
-                      e('td', null, p.tmtPangkat || '-'),
-                      e('td', null, k.masaKerja === null ? '-' : `${k.masaKerja} tahun`),
-                      e('td', null, `${k.syarat} tahun`),
-                      e('td', null, e(Badge, { status: k.status }))
-                    )
-                  )
-                : e('tr', null, e('td', { colSpan: 7, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Belum ada pegawai yang memenuhi syarat pada data saat ini.'))
-            )
-          )
-        )
-      )
-    );
-  }
-
-  /* ============================== INVENTARIS JABATAN FUNGSIONAL ============================== */
-  function InventarisJF({ pegawai, onSavePegawai, showToast }) {
-    const [editingNip, setEditingNip] = useState(null);
-    const [pakDraft, setPakDraft] = useState('');
-    const [folderDraft, setFolderDraft] = useState('');
-
-    const daftarJF = useMemo(() => pegawai.filter((p) => jenisKepegawaian(p.jabatan) === 'Fungsional'), [pegawai]);
-
-    function mulaiEdit(p) {
-      setEditingNip(p.nip);
-      setPakDraft(p.besaranPAK || '');
-      setFolderDraft(p.folderPAK || '');
-    }
-
-    function simpanEdit(p) {
-      onSavePegawai({ ...p, besaranPAK: pakDraft, folderPAK: folderDraft }, p);
-      setEditingNip(null);
-    }
-
-    return e(
-      'div',
-      null,
-      e(
-        'div',
-        { className: 'page-header' },
-        e('div', null, e('h1', null, 'Inventaris Jabatan Fungsional'), e('p', null, `Daftar ${daftarJF.length} pegawai pemegang jabatan fungsional beserta besaran PAK dan folder berkasnya.`))
+        { className: 'filter-bar' },
+        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama pegawai...', value: query, onChange: (ev) => setQuery(ev.target.value) })),
+        e('button', { className: 'btn btn-outline', onClick: () => setTampilkanSemua((v) => !v) }, tampilkanSemua ? 'Tampilkan yang Siap Saja' : 'Tampilkan Semua Pegawai')
       ),
       e(
         'div',
@@ -1773,30 +1776,109 @@ table { border-collapse: collapse; width: 100%; }
             e(
               'thead',
               null,
-              e('tr', null, e('th', null, 'Nama'), e('th', null, 'Jabatan Fungsional'), e('th', null, 'Pangkat/Golongan'), e('th', null, 'Besaran PAK'), e('th', null, 'Folder PAK'), e('th', null, ''))
+              e('tr', null, e('th', null, 'No'), e('th', null, 'Nama'), e('th', null, 'Golongan'), e('th', null, 'Jenis'), e('th', null, 'TMT Pangkat'), e('th', null, 'Masa Kerja'), e('th', null, 'Syarat'), e('th', null, 'Status'))
             ),
             e(
               'tbody',
               null,
-              daftarJF.length
-                ? daftarJF.map((p, i) => {
+              tampil.length
+                ? tampil.map(({ p, k }, i) =>
+                    e(
+                      'tr',
+                      { key: i },
+                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
+                      e('td', { 'data-label': 'Nama', style: { fontWeight: 600 } }, p.nama),
+                      e('td', { 'data-label': 'Golongan' }, p.golongan),
+                      e('td', { 'data-label': 'Jenis' }, k.jenis),
+                      e('td', { 'data-label': 'TMT Pangkat' }, p.tmtPangkat || '-'),
+                      e('td', { 'data-label': 'Masa Kerja' }, k.masaKerja === null ? '-' : `${k.masaKerja} tahun`),
+                      e('td', { 'data-label': 'Syarat' }, `${k.syarat} tahun`),
+                      e('td', { 'data-label': 'Status' }, e(Badge, { status: k.status }))
+                    )
+                  )
+                : e('tr', null, e('td', { colSpan: 8, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Belum ada pegawai yang memenuhi syarat pada data saat ini.'))
+            )
+          )
+        )
+      )
+    );
+  }
+
+  /* ============================== INVENTARIS JABATAN FUNGSIONAL ============================== */
+  function InventarisJF({ pegawai, onSavePegawai, showToast }) {
+    const [editingNip, setEditingNip] = useState(null);
+    const [pakDraft, setPakDraft] = useState('');
+    const [folderDraft, setFolderDraft] = useState('');
+    const [query, setQuery] = useState('');
+
+    const daftarJF = useMemo(() => pegawai.filter((p) => jenisKepegawaian(p.jabatan) === 'Fungsional'), [pegawai]);
+    const filtered = useMemo(
+      () => daftarJF.filter((p) => !query || (p.nama || '').toLowerCase().includes(query.toLowerCase()) || (p.jabatan || '').toLowerCase().includes(query.toLowerCase())),
+      [daftarJF, query]
+    );
+
+    function mulaiEdit(p) {
+      setEditingNip(p.nip);
+      setPakDraft(p.besaranPAK || '');
+      setFolderDraft(p.folderPAK || '');
+    }
+
+    function simpanEdit(p) {
+      onSavePegawai({ ...p, besaranPAK: pakDraft, folderPAK: folderDraft }, p);
+      setEditingNip(null);
+      showToast(`Data PAK ${p.nama} tersimpan.`);
+    }
+
+    return e(
+      'div',
+      null,
+      e(
+        'div',
+        { className: 'page-header' },
+        e('div', null, e('h1', null, 'Inventaris Jabatan Fungsional'), e('p', null, `Daftar ${daftarJF.length} pegawai pemegang jabatan fungsional beserta besaran PAK dan folder berkasnya.`))
+      ),
+      e(
+        'div',
+        { className: 'filter-bar' },
+        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama atau jabatan fungsional...', value: query, onChange: (ev) => setQuery(ev.target.value) }))
+      ),
+      e(
+        'div',
+        { className: 'card' },
+        e(
+          'div',
+          { className: 'table-wrap' },
+          e(
+            'table',
+            { className: 'data-table' },
+            e(
+              'thead',
+              null,
+              e('tr', null, e('th', null, 'No'), e('th', null, 'Nama'), e('th', null, 'Jabatan Fungsional'), e('th', null, 'Pangkat/Golongan'), e('th', null, 'Besaran PAK'), e('th', null, 'Folder PAK'), e('th', null, ''))
+            ),
+            e(
+              'tbody',
+              null,
+              filtered.length
+                ? filtered.map((p, i) => {
                     const sedangDiedit = editingNip === p.nip;
                     return e(
                       'tr',
                       { key: i },
-                      e('td', { style: { fontWeight: 600 } }, p.nama),
-                      e('td', null, p.jabatan),
-                      e('td', null, p.golongan),
+                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
+                      e('td', { 'data-label': 'Nama', style: { fontWeight: 600 } }, p.nama),
+                      e('td', { 'data-label': 'Jabatan Fungsional' }, p.jabatan),
+                      e('td', { 'data-label': 'Pangkat/Golongan' }, p.golongan),
                       e(
                         'td',
-                        null,
+                        { 'data-label': 'Besaran PAK' },
                         sedangDiedit
                           ? e('div', { className: 'input-search', style: { minWidth: 100 } }, e('input', { value: pakDraft, onChange: (ev) => setPakDraft(ev.target.value), placeholder: 'cth. 150' }))
                           : p.besaranPAK || '\u2014'
                       ),
                       e(
                         'td',
-                        null,
+                        { 'data-label': 'Folder PAK' },
                         sedangDiedit
                           ? e('div', { className: 'input-search', style: { minWidth: 140 } }, e('input', { value: folderDraft, onChange: (ev) => setFolderDraft(ev.target.value), placeholder: 'Tautan folder Drive' }))
                           : p.folderPAK
@@ -1805,14 +1887,14 @@ table { border-collapse: collapse; width: 100%; }
                       ),
                       e(
                         'td',
-                        null,
+                        { 'data-label': '' },
                         sedangDiedit
-                          ? e('button', { className: 'row-link', style: { background: 'none', border: 'none' }, onClick: () => simpanEdit(p) }, 'Simpan')
-                          : e('button', { className: 'row-link', style: { background: 'none', border: 'none' }, onClick: () => mulaiEdit(p) }, 'Kelola')
+                          ? e('button', { className: 'btn-action-green', onClick: () => simpanEdit(p) }, e(IconCheck, { size: 13 }), 'Simpan')
+                          : e('button', { className: 'btn-action-green', onClick: () => mulaiEdit(p), title: 'Kelola PAK' }, e(IconEdit, { size: 13 }))
                       )
                     );
                   })
-                : e('tr', null, e('td', { colSpan: 6, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada pegawai dengan jabatan fungsional pada data saat ini.'))
+                : e('tr', null, e('td', { colSpan: 7, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada pegawai dengan jabatan fungsional pada data saat ini.'))
             )
           )
         )
@@ -1821,6 +1903,8 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   function Presensi() {
+    const [query, setQuery] = useState('');
+    const filtered = useMemo(() => DATA_PRESENSI.filter((p) => !query || (p.nama || '').toLowerCase().includes(query.toLowerCase())), [query]);
     return e(
       'div',
       null,
@@ -1834,6 +1918,11 @@ table { border-collapse: collapse; width: 100%; }
       ),
       e(
         'div',
+        { className: 'filter-bar' },
+        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama pegawai...', value: query, onChange: (ev) => setQuery(ev.target.value) }))
+      ),
+      e(
+        'div',
         { className: 'card' },
         e(
           'div',
@@ -1841,20 +1930,23 @@ table { border-collapse: collapse; width: 100%; }
           e(
             'table',
             { className: 'data-table' },
-            e('thead', null, e('tr', null, e('th', null, 'Nama Pegawai'), e('th', null, 'Jam Masuk'), e('th', null, 'Jam Pulang'), e('th', null, 'Status'))),
+            e('thead', null, e('tr', null, e('th', null, 'No'), e('th', null, 'Nama Pegawai'), e('th', null, 'Jam Masuk'), e('th', null, 'Jam Pulang'), e('th', null, 'Status'))),
             e(
               'tbody',
               null,
-              DATA_PRESENSI.map((p, i) =>
-                e(
-                  'tr',
-                  { key: i },
-                  e('td', { style: { fontWeight: 600 } }, p.nama),
-                  e('td', null, p.masuk),
-                  e('td', null, p.pulang),
-                  e('td', null, e(Badge, { status: p.status }))
-                )
-              )
+              filtered.length
+                ? filtered.map((p, i) =>
+                    e(
+                      'tr',
+                      { key: i },
+                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
+                      e('td', { 'data-label': 'Nama Pegawai', style: { fontWeight: 600 } }, p.nama),
+                      e('td', { 'data-label': 'Jam Masuk' }, p.masuk),
+                      e('td', { 'data-label': 'Jam Pulang' }, p.pulang),
+                      e('td', { 'data-label': 'Status' }, e(Badge, { status: p.status }))
+                    )
+                  )
+                : e('tr', null, e('td', { colSpan: 5, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada data yang cocok.'))
             )
           )
         )
