@@ -519,6 +519,17 @@ table { border-collapse: collapse; width: 100%; }
   const IconShield = svgIcon([
     e('path', { key: 1, d: 'M12 2 3 6v6c0 5 3.8 8.5 9 10 5.2-1.5 9-5 9-10V6l-9-4Z' }),
   ]);
+  const IconAward = svgIcon([
+    e('circle', { key: 1, cx: 12, cy: 8, r: 6 }),
+    e('path', { key: 2, d: 'M8.5 13.5 7 22l5-3 5 3-1.5-8.5' }),
+  ]);
+  const IconFolder = svgIcon([
+    e('path', { key: 1, d: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z' }),
+  ]);
+  const IconEdit = svgIcon([
+    e('path', { key: 1, d: 'M12 20h9' }),
+    e('path', { key: 2, d: 'M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z' }),
+  ]);
 
   /* ============================== DATA ============================== */
   const DATA_PEGAWAI_CONTOH = [
@@ -666,6 +677,8 @@ table { border-collapse: collapse; width: 100%; }
     '#/kepegawaian/data-pegawai': { title: 'Data Pegawai', subtitle: 'Kepegawaian / Data Pegawai' },
     '#/kepegawaian/cuti': { title: 'Cuti Pegawai', subtitle: 'Kepegawaian / Cuti' },
     '#/kepegawaian/kenaikan-pangkat': { title: 'Kenaikan Pangkat', subtitle: 'Kepegawaian / Kenaikan Pangkat' },
+    '#/kepegawaian/kandidat-pangkat': { title: 'Kandidat Naik Pangkat', subtitle: 'Kepegawaian / Kandidat Naik Pangkat' },
+    '#/kepegawaian/inventaris-jf': { title: 'Inventaris Jabatan Fungsional', subtitle: 'Kepegawaian / Inventaris Jabatan Fungsional' },
     '#/kepegawaian/presensi': { title: 'Presensi', subtitle: 'Kepegawaian / Presensi' },
     '#/simoris': { title: 'SIMORIS', subtitle: 'Aplikasi Terintegrasi / SIMORIS' },
   };
@@ -774,7 +787,66 @@ table { border-collapse: collapse; width: 100%; }
       golongan: obj.golongan || '-',
       unit: obj.unit || '-',
       status: obj.status || 'Aktif',
+      tmtPangkat: obj.tmtPangkat || '',
+      besaranPAK: obj.besaranPAK || '',
+      folderPAK: obj.folderPAK || '',
     };
+  }
+
+  /* ============================== ATURAN KENAIKAN PANGKAT (BKN) ============================== */
+  // Dasar hukum: Peraturan BKN No. 4 Tahun 2025 tentang Periodisasi Kenaikan Pangkat PNS
+  // (berlaku efektif 1 Oktober 2025, mencabut Peraturan BKN No. 4/2023) — usul kenaikan
+  // pangkat kini dibuka 12 kali setahun, setiap tanggal 1 tiap bulan.
+  // Syarat kepangkatan: reguler (non-fungsional) min. 4 tahun dalam pangkat terakhir;
+  // pilihan/jabatan fungsional tertentu min. 2 tahun dalam pangkat terakhir + Angka Kredit
+  // kumulatif terpenuhi + SKP/penilaian kinerja bernilai baik 2 tahun terakhir
+  // (ref. PP 11/2017 jo. PP 17/2020, Permenpan RB No. 1/2023 tentang Jabatan Fungsional).
+  const SYARAT_TAHUN_FUNGSIONAL = 2;
+  const SYARAT_TAHUN_REGULER = 4;
+  const KATA_KUNCI_STRUKTURAL = ['kepala kantor', 'kepala divisi', 'kepala bidang', 'kepala bagian', 'kepala sub'];
+
+  function jenisKepegawaian(jabatan) {
+    const j = (jabatan || '').toLowerCase();
+    return KATA_KUNCI_STRUKTURAL.some((k) => j.includes(k)) ? 'Struktural' : 'Fungsional';
+  }
+
+  function parseNIP(nip) {
+    const digits = String(nip || '').replace(/\D/g, '');
+    if (digits.length < 18) return null;
+    const lahir = digits.slice(0, 8);
+    const tmtCPNS = digits.slice(8, 14);
+    const genderDigit = digits.slice(14, 15);
+    return {
+      tanggalLahir: `${lahir.slice(6, 8)}-${lahir.slice(4, 6)}-${lahir.slice(0, 4)}`,
+      tmtCPNS: `${tmtCPNS.slice(4, 6)}-${tmtCPNS.slice(0, 4)}`,
+      jenisKelamin: genderDigit === '1' ? 'Laki-laki' : genderDigit === '2' ? 'Perempuan' : '-',
+    };
+  }
+
+  function hitungTahunSelisih(tanggalMulai) {
+    const mulai = new Date(tanggalMulai);
+    if (isNaN(mulai.getTime())) return null;
+    const sekarang = new Date();
+    let tahun = sekarang.getFullYear() - mulai.getFullYear();
+    const belumUlangTahun =
+      sekarang.getMonth() < mulai.getMonth() || (sekarang.getMonth() === mulai.getMonth() && sekarang.getDate() < mulai.getDate());
+    if (belumUlangTahun) tahun -= 1;
+    return tahun;
+  }
+
+  function periodeUsulTerdekat() {
+    const now = new Date();
+    const bulanDepan = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    return bulanDepan.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  function kelayakanPangkat(p) {
+    const jenis = jenisKepegawaian(p.jabatan);
+    const syarat = jenis === 'Fungsional' ? SYARAT_TAHUN_FUNGSIONAL : SYARAT_TAHUN_REGULER;
+    if (!p.tmtPangkat) return { jenis, syarat, masaKerja: null, status: 'Data Belum Lengkap' };
+    const masaKerja = hitungTahunSelisih(p.tmtPangkat);
+    if (masaKerja === null) return { jenis, syarat, masaKerja: null, status: 'Data Belum Lengkap' };
+    return { jenis, syarat, masaKerja, status: masaKerja >= syarat ? 'Siap Diusulkan' : 'Belum Memenuhi' };
   }
 
   /* ============================== KOMPONEN KECIL ============================== */
@@ -813,6 +885,69 @@ table { border-collapse: collapse; width: 100%; }
 
   function AvatarChip({ nama }) {
     return e('div', { className: 'avatar-chip' }, initials(nama));
+  }
+
+  /* ============================== FORM PEGAWAI (TAMBAH/EDIT) ============================== */
+  function fieldStyle() {
+    return { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 };
+  }
+
+  function PegawaiForm({ initial, onClose, onSave }) {
+    const kosong = { nama: '', nip: '', jabatan: '', golongan: '', unit: '', status: 'Aktif', tmtPangkat: '', besaranPAK: '', folderPAK: '' };
+    const [form, setForm] = useState(initial || kosong);
+    const isEdit = !!initial;
+
+    function ubah(field, value) { setForm((f) => ({ ...f, [field]: value })); }
+
+    function handleSubmit(ev) {
+      ev.preventDefault();
+      if (!form.nama.trim() || !form.nip.trim()) return;
+      onSave(form, initial || null);
+    }
+
+    return e(
+      Modal,
+      { title: isEdit ? 'Edit Data Pegawai' : 'Tambah Pegawai Baru', onClose },
+      e(
+        'form',
+        { onSubmit: handleSubmit },
+        e(
+          'div',
+          { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 } },
+          e('div', null, e('label', { style: fieldStyle() }, 'Nama Pegawai'), e('div', { className: 'input-search' }, e('input', { value: form.nama, onChange: (ev) => ubah('nama', ev.target.value), required: true, autoFocus: true }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'NIP (18 digit)'), e('div', { className: 'input-search' }, e('input', { value: form.nip, onChange: (ev) => ubah('nip', ev.target.value), required: true, placeholder: '19900101 202001 1 001' }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Jabatan'), e('div', { className: 'input-search' }, e('input', { value: form.jabatan, onChange: (ev) => ubah('jabatan', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Golongan'), e('div', { className: 'input-search' }, e('input', { value: form.golongan, onChange: (ev) => ubah('golongan', ev.target.value), placeholder: 'III/a' }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Unit Kerja'), e('div', { className: 'input-search' }, e('input', { value: form.unit, onChange: (ev) => ubah('unit', ev.target.value) }))),
+          e(
+            'div',
+            null,
+            e('label', { style: fieldStyle() }, 'Status'),
+            e('select', { className: 'select-filter', style: { width: '100%' }, value: form.status, onChange: (ev) => ubah('status', ev.target.value) },
+              ['Aktif', 'Cuti', 'Dinas Luar', 'Sakit'].map((s) => e('option', { key: s }, s)))
+          ),
+          e(
+            'div',
+            null,
+            e('label', { style: fieldStyle() }, 'TMT Pangkat Terakhir'),
+            e('div', { className: 'input-search' }, e('input', { type: 'date', value: form.tmtPangkat, onChange: (ev) => ubah('tmtPangkat', ev.target.value) }))
+          ),
+          e('div', null, e('label', { style: fieldStyle() }, 'Besaran PAK (Angka Kredit)'), e('div', { className: 'input-search' }, e('input', { value: form.besaranPAK, onChange: (ev) => ubah('besaranPAK', ev.target.value), placeholder: 'cth. 150' }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Tautan Folder PAK'), e('div', { className: 'input-search' }, e('input', { value: form.folderPAK, onChange: (ev) => ubah('folderPAK', ev.target.value), placeholder: 'Tautan folder Drive' })))
+        ),
+        e(
+          'div',
+          { className: 'import-note', style: { marginTop: 14 } },
+          'TMT Pangkat Terakhir dipakai untuk menghitung kelayakan usul kenaikan pangkat di halaman Kandidat Naik Pangkat. Data tersimpan di browser perangkat ini (belum tersambung basis data pusat).'
+        ),
+        e(
+          'div',
+          { style: { display: 'flex', gap: 10, marginTop: 16 } },
+          e('button', { type: 'submit', className: 'btn btn-primary' }, e(IconCheck, { size: 15 }), isEdit ? 'Simpan Perubahan' : 'Tambah Pegawai'),
+          e('button', { type: 'button', className: 'btn btn-outline', onClick: onClose }, 'Batal')
+        )
+      )
+    );
   }
 
   /* ============================== LOGIN ============================== */
@@ -901,6 +1036,8 @@ table { border-collapse: collapse; width: 100%; }
     { hash: '#/kepegawaian/data-pegawai', label: 'Data Pegawai', icon: IconUsers },
     { hash: '#/kepegawaian/cuti', label: 'Cuti Pegawai', icon: IconCalendar },
     { hash: '#/kepegawaian/kenaikan-pangkat', label: 'Kenaikan Pangkat', icon: IconTrending },
+    { hash: '#/kepegawaian/kandidat-pangkat', label: 'Kandidat Naik Pangkat', icon: IconAward },
+    { hash: '#/kepegawaian/inventaris-jf', label: 'Inventaris Jab. Fungsional', icon: IconFolder },
     { hash: '#/kepegawaian/presensi', label: 'Presensi', icon: IconFingerprint },
   ];
 
@@ -1122,10 +1259,11 @@ table { border-collapse: collapse; width: 100%; }
     );
   }
 
-  function DataPegawai({ pegawai, sumber, onImport, onReset, showToast }) {
+  function DataPegawai({ pegawai, sumber, onImport, onReset, onSavePegawai, showToast }) {
     const [query, setQuery] = useState('');
     const [status, setStatus] = useState('Semua');
     const [detailPegawai, setDetailPegawai] = useState(null);
+    const [formPegawai, setFormPegawai] = useState(null); // { initial } | 'new' | null
     const fileInputRef = useRef(null);
 
     const filtered = useMemo(() => {
@@ -1177,7 +1315,7 @@ table { border-collapse: collapse; width: 100%; }
           { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
           sumber === 'impor' &&
             e('button', { className: 'btn btn-outline', onClick: () => { onReset(); showToast('Kembali menampilkan data contoh.'); } }, e(IconRefresh, { size: 15 }), 'Kembali ke Data Contoh'),
-          e('button', { className: 'btn btn-primary', onClick: () => showToast('Fitur tambah pegawai manual bisa disambungkan ke backend Anda.') }, e(IconPlus, { size: 15 }), 'Tambah Pegawai')
+          e('button', { className: 'btn btn-primary', onClick: () => setFormPegawai({ initial: null }) }, e(IconPlus, { size: 15 }), 'Tambah Pegawai')
         )
       ),
       e(
@@ -1275,14 +1413,28 @@ table { border-collapse: collapse; width: 100%; }
           e('div', { className: 'detail-row' }, e('span', null, 'Jabatan'), e('span', null, detailPegawai.jabatan)),
           e('div', { className: 'detail-row' }, e('span', null, 'Golongan'), e('span', null, detailPegawai.golongan)),
           e('div', { className: 'detail-row' }, e('span', null, 'Unit Kerja'), e('span', null, detailPegawai.unit)),
+          e('div', { className: 'detail-row' }, e('span', null, 'Jenis Kepegawaian'), e('span', null, jenisKepegawaian(detailPegawai.jabatan))),
+          e('div', { className: 'detail-row' }, e('span', null, 'TMT Pangkat Terakhir'), e('span', null, detailPegawai.tmtPangkat || 'Belum diisi')),
+          e('div', { className: 'detail-row' }, e('span', null, 'Besaran PAK'), e('span', null, detailPegawai.besaranPAK || '-')),
           e(
             'div',
             { className: 'import-note', style: { marginTop: 14 } },
             'Data pribadi lain (alamat, telepon, TTL, dsb.) tidak disimpan di aplikasi ini demi keamanan \u2014 cek langsung di ',
             e('a', { href: SIMPEG_DOSSIER_URL, target: '_blank', rel: 'noopener noreferrer' }, 'profil SIMPEG'),
             ' pegawai bersangkutan.'
+          ),
+          e(
+            'div',
+            { style: { display: 'flex', gap: 10, marginTop: 16 } },
+            e('button', { className: 'btn btn-primary', onClick: () => { setFormPegawai({ initial: detailPegawai }); setDetailPegawai(null); } }, e(IconEdit, { size: 15 }), 'Edit Data')
           )
-        )
+        ),
+      formPegawai &&
+        e(PegawaiForm, {
+          initial: formPegawai.initial,
+          onClose: () => setFormPegawai(null),
+          onSave: (data, original) => { onSavePegawai(data, original); setFormPegawai(null); },
+        })
     );
   }
 
@@ -1499,6 +1651,175 @@ table { border-collapse: collapse; width: 100%; }
     );
   }
 
+  /* ============================== KANDIDAT NAIK PANGKAT ============================== */
+  function KandidatNaikPangkat({ pegawai }) {
+    const [tampilkanSemua, setTampilkanSemua] = useState(false);
+
+    const baris = useMemo(() => {
+      return pegawai.map((p) => ({ p, k: kelayakanPangkat(p) }));
+    }, [pegawai]);
+
+    const siap = baris.filter((b) => b.k.status === 'Siap Diusulkan');
+    const tampil = tampilkanSemua ? baris : siap;
+    const belumLengkap = baris.filter((b) => b.k.status === 'Data Belum Lengkap').length;
+
+    return e(
+      'div',
+      null,
+      e(
+        'div',
+        { className: 'page-header' },
+        e('div', null, e('h1', null, 'Kandidat Naik Pangkat'), e('p', null, 'Daftar pegawai yang telah memenuhi syarat masa kerja untuk diusulkan naik pangkat.')),
+        e('button', { className: 'btn btn-outline', onClick: () => setTampilkanSemua((v) => !v) }, tampilkanSemua ? 'Tampilkan yang Siap Saja' : 'Tampilkan Semua Pegawai')
+      ),
+      e(
+        'div',
+        { className: 'import-note' },
+        e('strong', null, 'Dasar hukum: '),
+        'Peraturan BKN No. 4 Tahun 2025 tentang Periodisasi Kenaikan Pangkat PNS \u2014 usul kenaikan pangkat kini dibuka ',
+        e('strong', null, '12 kali setahun (setiap tanggal 1 tiap bulan)'),
+        '. Syarat pangkat ',
+        e('strong', null, 'reguler'),
+        ` minimal ${SYARAT_TAHUN_REGULER} tahun dalam pangkat terakhir; pangkat `,
+        e('strong', null, 'pilihan/jabatan fungsional'),
+        ` minimal ${SYARAT_TAHUN_FUNGSIONAL} tahun dalam pangkat terakhir + Angka Kredit kumulatif terpenuhi + SKP bernilai baik 2 tahun terakhir. Periode usul terdekat: `,
+        e('strong', null, periodeUsulTerdekat()),
+        '.',
+        belumLengkap > 0 &&
+          e('span', null, ` ${belumLengkap} pegawai belum punya data TMT Pangkat Terakhir \u2014 lengkapi lewat menu Edit Data di Data Pegawai agar bisa dihitung.`)
+      ),
+      e(
+        'div',
+        { className: 'stat-grid', style: { gridTemplateColumns: 'repeat(3, 1fr)' } },
+        e(StatCard, { icon: IconAward, label: 'Siap Diusulkan', value: String(siap.length), tone: 'success' }),
+        e(StatCard, { icon: IconClock, label: 'Belum Memenuhi Masa Kerja', value: String(baris.filter((b) => b.k.status === 'Belum Memenuhi').length), tone: 'warning' }),
+        e(StatCard, { icon: IconUsers, label: 'Data Belum Lengkap', value: String(belumLengkap), tone: 'info' })
+      ),
+      e(
+        'div',
+        { className: 'card' },
+        e(
+          'div',
+          { className: 'table-wrap' },
+          e(
+            'table',
+            { className: 'data-table' },
+            e(
+              'thead',
+              null,
+              e('tr', null, e('th', null, 'Nama'), e('th', null, 'Golongan'), e('th', null, 'Jenis'), e('th', null, 'TMT Pangkat'), e('th', null, 'Masa Kerja'), e('th', null, 'Syarat'), e('th', null, 'Status'))
+            ),
+            e(
+              'tbody',
+              null,
+              tampil.length
+                ? tampil.map(({ p, k }, i) =>
+                    e(
+                      'tr',
+                      { key: i },
+                      e('td', { style: { fontWeight: 600 } }, p.nama),
+                      e('td', null, p.golongan),
+                      e('td', null, k.jenis),
+                      e('td', null, p.tmtPangkat || '-'),
+                      e('td', null, k.masaKerja === null ? '-' : `${k.masaKerja} tahun`),
+                      e('td', null, `${k.syarat} tahun`),
+                      e('td', null, e(Badge, { status: k.status }))
+                    )
+                  )
+                : e('tr', null, e('td', { colSpan: 7, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Belum ada pegawai yang memenuhi syarat pada data saat ini.'))
+            )
+          )
+        )
+      )
+    );
+  }
+
+  /* ============================== INVENTARIS JABATAN FUNGSIONAL ============================== */
+  function InventarisJF({ pegawai, onSavePegawai, showToast }) {
+    const [editingNip, setEditingNip] = useState(null);
+    const [pakDraft, setPakDraft] = useState('');
+    const [folderDraft, setFolderDraft] = useState('');
+
+    const daftarJF = useMemo(() => pegawai.filter((p) => jenisKepegawaian(p.jabatan) === 'Fungsional'), [pegawai]);
+
+    function mulaiEdit(p) {
+      setEditingNip(p.nip);
+      setPakDraft(p.besaranPAK || '');
+      setFolderDraft(p.folderPAK || '');
+    }
+
+    function simpanEdit(p) {
+      onSavePegawai({ ...p, besaranPAK: pakDraft, folderPAK: folderDraft }, p);
+      setEditingNip(null);
+    }
+
+    return e(
+      'div',
+      null,
+      e(
+        'div',
+        { className: 'page-header' },
+        e('div', null, e('h1', null, 'Inventaris Jabatan Fungsional'), e('p', null, `Daftar ${daftarJF.length} pegawai pemegang jabatan fungsional beserta besaran PAK dan folder berkasnya.`))
+      ),
+      e(
+        'div',
+        { className: 'card' },
+        e(
+          'div',
+          { className: 'table-wrap' },
+          e(
+            'table',
+            { className: 'data-table' },
+            e(
+              'thead',
+              null,
+              e('tr', null, e('th', null, 'Nama'), e('th', null, 'Jabatan Fungsional'), e('th', null, 'Pangkat/Golongan'), e('th', null, 'Besaran PAK'), e('th', null, 'Folder PAK'), e('th', null, ''))
+            ),
+            e(
+              'tbody',
+              null,
+              daftarJF.length
+                ? daftarJF.map((p, i) => {
+                    const sedangDiedit = editingNip === p.nip;
+                    return e(
+                      'tr',
+                      { key: i },
+                      e('td', { style: { fontWeight: 600 } }, p.nama),
+                      e('td', null, p.jabatan),
+                      e('td', null, p.golongan),
+                      e(
+                        'td',
+                        null,
+                        sedangDiedit
+                          ? e('div', { className: 'input-search', style: { minWidth: 100 } }, e('input', { value: pakDraft, onChange: (ev) => setPakDraft(ev.target.value), placeholder: 'cth. 150' }))
+                          : p.besaranPAK || '\u2014'
+                      ),
+                      e(
+                        'td',
+                        null,
+                        sedangDiedit
+                          ? e('div', { className: 'input-search', style: { minWidth: 140 } }, e('input', { value: folderDraft, onChange: (ev) => setFolderDraft(ev.target.value), placeholder: 'Tautan folder Drive' }))
+                          : p.folderPAK
+                          ? e('a', { className: 'row-link', href: p.folderPAK, target: '_blank', rel: 'noopener noreferrer' }, 'Buka Folder')
+                          : e('span', { style: { color: 'var(--color-text-faint)' } }, 'Belum ada')
+                      ),
+                      e(
+                        'td',
+                        null,
+                        sedangDiedit
+                          ? e('button', { className: 'row-link', style: { background: 'none', border: 'none' }, onClick: () => simpanEdit(p) }, 'Simpan')
+                          : e('button', { className: 'row-link', style: { background: 'none', border: 'none' }, onClick: () => mulaiEdit(p) }, 'Kelola')
+                      )
+                    );
+                  })
+                : e('tr', null, e('td', { colSpan: 6, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada pegawai dengan jabatan fungsional pada data saat ini.'))
+            )
+          )
+        )
+      )
+    );
+  }
+
   function Presensi() {
     return e(
       'div',
@@ -1622,6 +1943,17 @@ table { border-collapse: collapse; width: 100%; }
       setPegawaiState(muatDataPegawai());
     }
 
+    function handleSavePegawai(data, original) {
+      setPegawaiState((prev) => {
+        const list = original
+          ? prev.data.map((p) => (p.nip === original.nip ? { ...p, ...data } : p))
+          : [{ ...data }, ...prev.data];
+        simpanDataPegawai(list);
+        return { data: list, sumber: 'impor' };
+      });
+      showToast(original ? `Data ${data.nama} diperbarui.` : `${data.nama} ditambahkan ke daftar pegawai.`);
+    }
+
     function handleLogout() {
       sessionStorage.removeItem(SESSION_KEY_AUTH);
       setAuthed(false);
@@ -1636,9 +1968,11 @@ table { border-collapse: collapse; width: 100%; }
     let page;
     if (hash === '#/') page = e(Dashboard, { pegawai: pegawaiState.data });
     else if (hash === '#/kepegawaian/data-pegawai')
-      page = e(DataPegawai, { pegawai: pegawaiState.data, sumber: pegawaiState.sumber, onImport: handleImport, onReset: handleReset, showToast });
+      page = e(DataPegawai, { pegawai: pegawaiState.data, sumber: pegawaiState.sumber, onImport: handleImport, onReset: handleReset, onSavePegawai: handleSavePegawai, showToast });
     else if (hash === '#/kepegawaian/cuti') page = e(Cuti);
     else if (hash === '#/kepegawaian/kenaikan-pangkat') page = e(KenaikanPangkat, { pegawai: pegawaiState.data, showToast });
+    else if (hash === '#/kepegawaian/kandidat-pangkat') page = e(KandidatNaikPangkat, { pegawai: pegawaiState.data });
+    else if (hash === '#/kepegawaian/inventaris-jf') page = e(InventarisJF, { pegawai: pegawaiState.data, onSavePegawai: handleSavePegawai, showToast });
     else if (hash === '#/kepegawaian/presensi') page = e(Presensi);
     else if (hash === '#/simoris') page = e(Simoris);
     else page = e(NotFound);
