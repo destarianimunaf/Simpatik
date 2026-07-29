@@ -228,6 +228,22 @@ table { border-collapse: collapse; width: 100%; }
 .btn-primary:hover { background: var(--color-primary-dark); }
 .btn-outline { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text); }
 .btn-outline:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-success { background: var(--color-success); color: #fff; }
+.btn-success:hover { background: #128a3e; }
+.btn-icon {
+  width: 32px; height: 32px; padding: 0; justify-content: center; border-radius: 8px;
+  background: var(--color-success-soft); color: var(--color-success); border: 1px solid transparent;
+}
+.btn-icon:hover { background: var(--color-success); color: #fff; }
+.btn-icon-sm { width: 28px; height: 28px; }
+
+.tab-bar { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 1px solid var(--color-border); flex-wrap: wrap; }
+.tab-btn {
+  background: none; border: none; padding: 10px 6px; margin-bottom: -1px; font-size: 13px; font-weight: 600;
+  color: var(--color-text-muted); border-bottom: 2px solid transparent;
+}
+.tab-btn.active { color: var(--color-primary-dark); border-bottom-color: var(--color-primary); }
+.tab-btn:hover { color: var(--color-primary-dark); }
 
 .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
 .badge-success { background: var(--color-success-soft); color: var(--color-success); }
@@ -266,6 +282,43 @@ table { border-collapse: collapse; width: 100%; }
   font-size: 11.5px; font-weight: 700; flex-shrink: 0;
 }
 .table-wrap { overflow-x: auto; }
+
+@media (max-width: 720px) {
+  .data-table thead { display: none; }
+  .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+  .data-table tr { margin-bottom: 10px; border: 1px solid var(--color-border); border-radius: 10px; padding: 4px 0; }
+  .data-table tr:hover td { background: transparent; }
+  .data-table td {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 8px 14px; border-bottom: 1px dashed var(--color-border); text-align: right;
+  }
+  .data-table td:last-child { border-bottom: none; }
+  .data-table td::before {
+    content: attr(data-label); font-weight: 700; color: var(--color-text-faint); font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.04em; text-align: left; margin-right: auto;
+  }
+  .data-table td:empty::before { content: none; }
+  .data-table .name-cell { flex-direction: row-reverse; }
+}
+
+@media print {
+  .sidebar, .sidebar-backdrop, .topbar, .toast, .no-print { display: none !important; }
+  .main-area { margin-left: 0 !important; }
+  .page-content { padding: 0 !important; }
+  body { background: #fff !important; }
+}
+
+.sk-doc { font-size: 13px; line-height: 1.7; color: #111; max-width: 720px; margin: 0 auto; }
+.sk-doc__kop { text-align: center; border-bottom: 2.5px solid #111; padding-bottom: 10px; margin-bottom: 18px; }
+.sk-doc__kop .instansi { font-weight: 800; font-size: 15px; text-transform: uppercase; }
+.sk-doc__kop .unit { font-size: 12.5px; }
+.sk-doc__title { text-align: center; font-weight: 700; text-decoration: underline; margin: 14px 0 4px; text-transform: uppercase; }
+.sk-doc__nomor { text-align: center; margin-bottom: 14px; }
+.sk-doc table.sk-info td { padding: 3px 0; vertical-align: top; font-size: 13px; }
+.sk-doc table.sk-info td:first-child { width: 220px; }
+.sk-doc__ttd { margin-top: 40px; display: flex; justify-content: flex-end; text-align: center; }
+.sk-doc__ttd-block { width: 260px; }
+.sk-doc__ttd-space { height: 64px; }
 
 .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
 .input-search {
@@ -370,39 +423,6 @@ table { border-collapse: collapse; width: 100%; }
 .detail-row span:first-child { color: var(--color-text-muted); }
 .detail-row span:last-child { font-weight: 600; text-align: right; }
 .row-link { color: var(--color-primary-dark); font-weight: 600; font-size: 12.5px; }
-
-/* ===== Tombol aksi hijau (mis. Kelola/Edit di tabel) ===== */
-.btn-action-green {
-  display: inline-flex; align-items: center; gap: 5px; background: var(--color-success-soft);
-  color: var(--color-success); border: 1px solid transparent; border-radius: 999px;
-  padding: 5px 11px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s;
-}
-.btn-action-green:hover { background: #C9F2DA; }
-
-/* ===== Tabel responsif ala kartu di layar sempit ===== */
-@media (max-width: 700px) {
-  .data-table thead { display: none; }
-  .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
-  .data-table { border: none; }
-  .data-table tr { border: 1px solid var(--color-border); border-radius: 12px; margin-bottom: 10px; padding: 4px 14px; background: var(--color-surface); }
-  .data-table td { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--color-border); text-align: right; }
-  .data-table td:last-child { border-bottom: none; }
-  .data-table td::before { content: attr(data-label); font-size: 11.5px; font-weight: 700; color: var(--color-text-faint); text-align: left; text-transform: uppercase; letter-spacing: .02em; }
-  .data-table td:empty::before { content: none; }
-  .table-wrap { overflow-x: visible; }
-  .filter-bar { flex-direction: column; align-items: stretch; }
-  .filter-bar .select-filter { width: 100%; }
-  .page-header { flex-direction: column; align-items: stretch; }
-  .page-header > div:last-child { display: flex; flex-direction: column; }
-}
-
-/* ===== Cetak SK (print) ===== */
-.printable-sk { display: none; }
-@media print {
-  body * { visibility: hidden; }
-  .printable-sk, .printable-sk * { visibility: visible; }
-  .printable-sk { display: block; position: absolute; top: 0; left: 0; width: 100%; padding: 30px; }
-}
   </style>
 </head>
 <body>
@@ -563,6 +583,16 @@ table { border-collapse: collapse; width: 100%; }
     e('path', { key: 1, d: 'M12 20h9' }),
     e('path', { key: 2, d: 'M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z' }),
   ]);
+  const IconPrinter = svgIcon([
+    e('polyline', { key: 1, points: '6 9 6 2 18 2 18 9' }),
+    e('path', { key: 2, d: 'M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2' }),
+    e('rect', { key: 3, x: 6, y: 14, width: 12, height: 8 }),
+  ]);
+  const IconWallet = svgIcon([
+    e('path', { key: 1, d: 'M21 12V7H5a2 2 0 0 1 0-4h14v4' }),
+    e('path', { key: 2, d: 'M3 5v14a2 2 0 0 0 2 2h16v-5' }),
+    e('path', { key: 3, d: 'M18 12a2 2 0 0 0 0 4h4v-4Z' }),
+  ]);
 
   /* ============================== DATA ============================== */
   const DATA_PEGAWAI_CONTOH = [
@@ -710,7 +740,7 @@ table { border-collapse: collapse; width: 100%; }
     '#/kepegawaian/data-pegawai': { title: 'Data Pegawai', subtitle: 'Kepegawaian / Data Pegawai' },
     '#/kepegawaian/cuti': { title: 'Cuti Pegawai', subtitle: 'Kepegawaian / Cuti' },
     '#/kepegawaian/kenaikan-pangkat': { title: 'Kenaikan Pangkat', subtitle: 'Kepegawaian / Kenaikan Pangkat' },
-    '#/kepegawaian/kandidat-pangkat': { title: 'Kandidat Naik Pangkat', subtitle: 'Kepegawaian / Kandidat Naik Pangkat' },
+    '#/kepegawaian/gaji-berkala': { title: 'Gaji Berkala', subtitle: 'Kepegawaian / Gaji Berkala' },
     '#/kepegawaian/inventaris-jf': { title: 'Inventaris Jabatan Fungsional', subtitle: 'Kepegawaian / Inventaris Jabatan Fungsional' },
     '#/kepegawaian/presensi': { title: 'Presensi', subtitle: 'Kepegawaian / Presensi' },
     '#/simoris': { title: 'SIMORIS', subtitle: 'Aplikasi Terintegrasi / SIMORIS' },
@@ -880,6 +910,101 @@ table { border-collapse: collapse; width: 100%; }
     const masaKerja = hitungTahunSelisih(p.tmtPangkat);
     if (masaKerja === null) return { jenis, syarat, masaKerja: null, status: 'Data Belum Lengkap' };
     return { jenis, syarat, masaKerja, status: masaKerja >= syarat ? 'Siap Diusulkan' : 'Belum Memenuhi' };
+  }
+
+  /* ============================== GAJI POKOK & KENAIKAN GAJI BERKALA (KGB) ==============================
+     Sumber: Peraturan BKN Nomor 1 Tahun 2024 (Lampiran I), angka kolom "PP No. 5 Tahun 2024" — regulasi gaji
+     pokok PNS yang masih berlaku (belum ada PP pengganti per pertengahan 2026). Setiap pasangan tahun memakai
+     nominal yang sama (gaji naik tiap kelipatan genap masa kerja golongan/MKG); array di bawah hanya menyimpan
+     titik saat nominal berubah. Hanya golongan yang muncul pada data pegawai Kanwil yang disertakan penuh;
+     tambahkan golongan lain dengan pola yang sama bila ada pegawai baru di golongan tersebut.
+     CATATAN: ini adalah alat bantu estimasi, bukan pengganti SK resmi — selalu verifikasi ke Biro Kepegawaian/BKN. */
+  const TABEL_GAJI_POKOK = {
+    'I/a': [[0, 1685700], [2, 1738800], [4, 1793500], [6, 1850000], [8, 1908300], [10, 1968400], [12, 2030400], [14, 2094300], [16, 2160300], [18, 2228300], [20, 2298500], [22, 2370900], [24, 2445500], [26, 2522600]],
+    'I/b': [[3, 1840800], [5, 1898800], [7, 1958600], [9, 2020300], [11, 2083900], [13, 2149600], [15, 2217300], [17, 2287100], [19, 2359100], [21, 2433400], [23, 2510100], [25, 2589100], [27, 2670700]],
+    'I/c': [[3, 1918700], [5, 1979100], [7, 2041500], [9, 2105800], [11, 2172100], [13, 2240500], [15, 2311100], [17, 2383900], [19, 2458900], [21, 2536400], [23, 2616300], [25, 2698700], [27, 2783700]],
+    'I/d': [[3, 1999900], [5, 2062900], [7, 2127800], [9, 2194800], [11, 2264000], [13, 2335300], [15, 2408800], [17, 2484700], [19, 2562900], [21, 2643700], [23, 2726900], [25, 2812800], [27, 2901400]],
+    'II/a': [[0, 2184000], [1, 2218400], [3, 2288200], [5, 2360300], [7, 2434600], [9, 2511300], [11, 2590400], [13, 2672000], [15, 2756200], [17, 2843000], [19, 2932500], [21, 3024900], [23, 3120100], [25, 3218400], [27, 3319800], [29, 3424300], [31, 3532200], [33, 3643400]],
+    'II/b': [[3, 2385000], [5, 2460100], [7, 2537600], [9, 2617500], [11, 2700000], [13, 2785000], [15, 2872700], [17, 2963200], [19, 3056500], [21, 3152800], [23, 3252100], [25, 3354500], [27, 3460200], [29, 3569200], [31, 3681600], [33, 3797500]],
+    'II/c': [[3, 2485900], [5, 2564200], [7, 2645000], [9, 2728300], [11, 2814200], [13, 2902800], [15, 2994300], [17, 3088600], [19, 3185800], [21, 3286200], [23, 3389700], [25, 3496400], [27, 3606500], [29, 3720100], [31, 3837300], [33, 3958200]],
+    'II/d': [[3, 2591100], [5, 2672700], [7, 2756800], [9, 2843700], [11, 2933200], [13, 3025600], [15, 3120900], [17, 3219200], [19, 3320600], [21, 3425200], [23, 3533100], [25, 3644300], [27, 3759100], [29, 3877500], [31, 3999600], [33, 4125600]],
+    'III/a': [[0, 2785700], [2, 2873500], [4, 2964000], [6, 3057300], [8, 3153600], [10, 3252900], [12, 3355400], [14, 3461100], [16, 3570100], [18, 3682500], [20, 3798500], [22, 3918100], [24, 4041500], [26, 4168800], [28, 4300100], [30, 4435500], [32, 4575200]],
+    'III/b': [[0, 2903600], [2, 2995000], [4, 3089300], [6, 3186600], [8, 3287000], [10, 3390500], [12, 3497300], [14, 3607500], [16, 3721100], [18, 3838300], [20, 3959200], [22, 4083900], [24, 4212500], [26, 4345100], [28, 4482000], [30, 4623200], [32, 4768800]],
+    'III/c': [[0, 3026400], [2, 3121700], [4, 3220000], [6, 3321400], [8, 3426000], [10, 3533900], [12, 3645200], [14, 3760100], [16, 3878500], [18, 4000600], [20, 4126600], [22, 4256600], [24, 4390700], [26, 4528900], [28, 4671600], [30, 4818700], [32, 4970500]],
+    'III/d': [[0, 3154400], [2, 3253700], [4, 3356200], [6, 3461900], [8, 3571000], [10, 3683400], [12, 3799400], [14, 3919100], [16, 4042500], [18, 4169900], [20, 4301200], [22, 4436700], [24, 4576400], [26, 4720500], [28, 4869200], [30, 5022500], [32, 5180700]],
+    'IV/a': [[0, 3287800], [2, 3391400], [4, 3498200], [6, 3608400], [8, 3722000], [10, 3839200], [12, 3960200], [14, 4084900], [16, 4213500], [18, 4346200], [20, 4483100], [22, 4624300], [24, 4770000], [26, 4920200], [28, 5075200], [30, 5235000], [32, 5399900]],
+    'IV/b': [[0, 3426900], [2, 3534800], [4, 3646200], [6, 3761000], [8, 3879500], [10, 4001600], [12, 4127700], [14, 4257700], [16, 4391800], [18, 4530100], [20, 4672800], [22, 4819900], [24, 4971700], [26, 5128300], [28, 5289800], [30, 5456400], [32, 5628300]],
+    'IV/c': [[0, 3571900], [2, 3684400], [4, 3800400], [6, 3920100], [8, 4043600], [10, 4170900], [12, 4302300], [14, 4437800], [16, 4577500], [18, 4721700], [20, 4870400], [22, 5023800], [24, 5182000], [26, 5345200], [28, 5513600], [30, 5687200], [32, 5866400]],
+    'IV/d': [[0, 3723000], [2, 3840200], [4, 3961200], [6, 4085900], [8, 4214600], [10, 4347300], [12, 4484300], [14, 4625500], [16, 4771200], [18, 4921400], [20, 5076400], [22, 5236300], [24, 5401200], [26, 5571400], [28, 5746800], [30, 5927800], [32, 6114500]],
+  };
+
+  function formatRupiah(angka) {
+    if (angka === null || angka === undefined) return '-';
+    return 'Rp' + Number(angka).toLocaleString('id-ID');
+  }
+
+  // Cari gaji pokok & titik kenaikan berikutnya berdasarkan golongan + masa kerja golongan (tahun).
+  function cariGajiPokok(golongan, mkgTahun) {
+    const tabel = TABEL_GAJI_POKOK[golongan];
+    if (!tabel || mkgTahun === null || mkgTahun === undefined) return null;
+    let baris = null;
+    let berikutnya = null;
+    for (let i = 0; i < tabel.length; i++) {
+      if (tabel[i][0] <= mkgTahun) baris = tabel[i];
+      else { berikutnya = tabel[i]; break; }
+    }
+    if (!baris) baris = tabel[0];
+    return { gaji: baris[1], mkgSaatIni: baris[0], mkgBerikutnya: berikutnya ? berikutnya[0] : null, gajiBerikutnya: berikutnya ? berikutnya[1] : null };
+  }
+
+  // Tanggal acuan KGB: pakai TMT Pangkat Terakhir jika sudah diisi (paling akurat, karena masa kerja
+  // golongan reset tiap kali naik pangkat), jika belum ada baru pakai TMT CPNS hasil urai NIP sesuai
+  // permintaan ("dilihat dari NIP pegawai dan tanggal masuk"). KGB berjalan tiap kelipatan 2 tahun.
+  function tanggalAcuanKGB(p) {
+    if (p.tmtPangkat) {
+      const d = new Date(p.tmtPangkat);
+      if (!isNaN(d.getTime())) return { tanggal: d, sumber: 'TMT Pangkat Terakhir' };
+    }
+    const nip = parseNIP(p.nip);
+    if (nip && nip.tmtCPNS) {
+      const [bln, thn] = nip.tmtCPNS.split('-');
+      const d = new Date(Number(thn), Number(bln) - 1, 1);
+      if (!isNaN(d.getTime())) return { tanggal: d, sumber: 'TMT CPNS (dari NIP)' };
+    }
+    return null;
+  }
+
+  function infoGajiBerkala(p) {
+    const acuan = tanggalAcuanKGB(p);
+    if (!acuan) return null;
+    const sekarang = new Date();
+    let tahunMKG = sekarang.getFullYear() - acuan.tanggal.getFullYear();
+    const belumUlangBulan = sekarang.getMonth() < acuan.tanggal.getMonth();
+    if (belumUlangBulan) tahunMKG -= 1;
+    if (tahunMKG < 0) tahunMKG = 0;
+
+    const info = cariGajiPokok(p.golongan, tahunMKG);
+    if (!info) return null;
+
+    // Tanggal KGB berikutnya = acuan + kelipatan 2 tahun berikutnya dari sekarang
+    const tahunKgbBerikutnya = Math.ceil((tahunMKG + 1) / 2) * 2;
+    const tglKgbBerikutnya = new Date(acuan.tanggal.getFullYear() + tahunKgbBerikutnya, acuan.tanggal.getMonth(), 1);
+
+    return {
+      sumberTanggal: acuan.sumber,
+      tanggalAcuan: acuan.tanggal,
+      masaKerjaGolongan: tahunMKG,
+      gajiPokokSaatIni: info.gaji,
+      gajiPokokBerikutnya: info.gajiBerikutnya,
+      tanggalKgbBerikutnya: tglKgbBerikutnya,
+    };
+  }
+
+  function formatBulanTahun(d) {
+    return d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  }
+  function formatTanggalPanjang(d) {
+    return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
   }
 
   /* ============================== KOMPONEN KECIL ============================== */
@@ -1069,7 +1194,7 @@ table { border-collapse: collapse; width: 100%; }
     { hash: '#/kepegawaian/data-pegawai', label: 'Data Pegawai', icon: IconUsers },
     { hash: '#/kepegawaian/cuti', label: 'Cuti Pegawai', icon: IconCalendar },
     { hash: '#/kepegawaian/kenaikan-pangkat', label: 'Kenaikan Pangkat', icon: IconTrending },
-    { hash: '#/kepegawaian/kandidat-pangkat', label: 'Kandidat Naik Pangkat', icon: IconAward },
+    { hash: '#/kepegawaian/gaji-berkala', label: 'Gaji Berkala', icon: IconWallet },
     { hash: '#/kepegawaian/inventaris-jf', label: 'Inventaris Jab. Fungsional', icon: IconFolder },
     { hash: '#/kepegawaian/presensi', label: 'Presensi', icon: IconFingerprint },
   ];
@@ -1417,14 +1542,14 @@ table { border-collapse: collapse; width: 100%; }
                     e(
                       'tr',
                       { key: i },
-                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
-                      e('td', { 'data-label': 'Nama Pegawai' }, e('div', { className: 'name-cell' }, e(AvatarChip, { nama: p.nama }), e('span', { style: { fontWeight: 600 } }, p.nama))),
-                      e('td', { 'data-label': 'NIP' }, p.nip),
-                      e('td', { 'data-label': 'Jabatan' }, p.jabatan),
-                      e('td', { 'data-label': 'Golongan' }, p.golongan),
-                      e('td', { 'data-label': 'Unit Kerja' }, p.unit),
-                      e('td', { 'data-label': 'Status' }, e(Badge, { status: p.status })),
-                      e('td', { 'data-label': '' }, e('button', { className: 'btn-action-green', onClick: () => setDetailPegawai(p) }, e(IconEdit, { size: 13 }), 'Detail'))
+                      e('td', { style: { color: 'var(--color-text-faint)' } }, i + 1),
+                      e('td', null, e('div', { className: 'name-cell' }, e(AvatarChip, { nama: p.nama }), e('span', { style: { fontWeight: 600 } }, p.nama))),
+                      e('td', null, p.nip),
+                      e('td', null, p.jabatan),
+                      e('td', null, p.golongan),
+                      e('td', null, p.unit),
+                      e('td', null, e(Badge, { status: p.status })),
+                      e('td', null, e('button', { className: 'row-link', style: { background: 'none', border: 'none' }, onClick: () => setDetailPegawai(p) }, 'Detail'))
                     )
                   )
                 : e('tr', null, e('td', { colSpan: 8, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada pegawai yang cocok dengan pencarian.'))
@@ -1472,11 +1597,6 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   function Cuti() {
-    const [query, setQuery] = useState('');
-    const filtered = useMemo(
-      () => DATA_CUTI.filter((c) => !query || (c.nama || '').toLowerCase().includes(query.toLowerCase()) || (c.jenis || '').toLowerCase().includes(query.toLowerCase())),
-      [query]
-    );
     return e(
       'div',
       null,
@@ -1488,11 +1608,6 @@ table { border-collapse: collapse; width: 100%; }
       ),
       e(
         'div',
-        { className: 'filter-bar' },
-        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama atau jenis cuti...', value: query, onChange: (ev) => setQuery(ev.target.value) }))
-      ),
-      e(
-        'div',
         { className: 'card' },
         e(
           'div',
@@ -1500,24 +1615,21 @@ table { border-collapse: collapse; width: 100%; }
           e(
             'table',
             { className: 'data-table' },
-            e('thead', null, e('tr', null, e('th', null, 'No'), e('th', null, 'Nama Pegawai'), e('th', null, 'Jenis Cuti'), e('th', null, 'Mulai'), e('th', null, 'Selesai'), e('th', null, 'Status'))),
+            e('thead', null, e('tr', null, e('th', null, 'Nama Pegawai'), e('th', null, 'Jenis Cuti'), e('th', null, 'Mulai'), e('th', null, 'Selesai'), e('th', null, 'Status'))),
             e(
               'tbody',
               null,
-              filtered.length
-                ? filtered.map((c, i) =>
-                    e(
-                      'tr',
-                      { key: i },
-                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
-                      e('td', { 'data-label': 'Nama Pegawai', style: { fontWeight: 600 } }, c.nama),
-                      e('td', { 'data-label': 'Jenis Cuti' }, c.jenis),
-                      e('td', { 'data-label': 'Mulai' }, c.mulai),
-                      e('td', { 'data-label': 'Selesai' }, c.selesai),
-                      e('td', { 'data-label': 'Status' }, e(Badge, { status: c.status }))
-                    )
-                  )
-                : e('tr', null, e('td', { colSpan: 6, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada data yang cocok.'))
+              DATA_CUTI.map((c, i) =>
+                e(
+                  'tr',
+                  { key: i },
+                  e('td', { style: { fontWeight: 600 } }, c.nama),
+                  e('td', null, c.jenis),
+                  e('td', null, c.mulai),
+                  e('td', null, c.selesai),
+                  e('td', null, e(Badge, { status: c.status }))
+                )
+              )
             )
           )
         )
@@ -1533,7 +1645,7 @@ table { border-collapse: collapse; width: 100%; }
     const [pak, setPak] = useState('');
     const [periode, setPeriode] = useState(PERIODE_KP_OPTIONS[0]);
     const [skTerakhir, setSkTerakhir] = useState('');
-    const [query, setQuery] = useState('');
+    const [cariBaris, setCariBaris] = useState('');
 
     const pegawaiTerpilih = pegawai.find((p) => p.nama === namaTerpilih);
     const checklist = [
@@ -1569,8 +1681,9 @@ table { border-collapse: collapse; width: 100%; }
       setFormOpen(false);
     }
 
-    const semuaBaris = [...pengajuan, ...DATA_KENAIKAN_PANGKAT];
-    const barisTersaring = semuaBaris.filter((k) => !query || (k.nama || '').toLowerCase().includes(query.toLowerCase()));
+    const semuaBaris = [...pengajuan, ...DATA_KENAIKAN_PANGKAT].filter((k) =>
+      !cariBaris || k.nama.toLowerCase().includes(cariBaris.toLowerCase())
+    );
 
     return e(
       'div',
@@ -1578,19 +1691,19 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'page-header' },
-        e('div', null, e('h1', null, 'Kenaikan Pangkat'), e('p', null, 'Pantau usulan, riwayat, dan kandidat kenaikan pangkat pegawai.')),
+        e('div', null, e('h1', null, 'Kenaikan Pangkat'), e('p', null, 'Pantau usulan kenaikan pangkat dan lihat kandidat yang memenuhi syarat masa kerja.')),
         tab === 'pengajuan' &&
           e('button', { className: 'btn btn-primary', onClick: () => setFormOpen((v) => !v) }, e(IconPlus, { size: 15 }), formOpen ? 'Tutup Formulir' : 'Ajukan Kenaikan Pangkat')
       ),
       e(
         'div',
         { className: 'tab-bar' },
-        e('button', { className: `tab-btn ${tab === 'pengajuan' ? 'active' : ''}`, onClick: () => setTab('pengajuan') }, 'Pengajuan & Riwayat'),
-        e('button', { className: `tab-btn ${tab === 'kandidat' ? 'active' : ''}`, onClick: () => setTab('kandidat') }, e(IconAward, { size: 14 }), 'Kandidat Naik Pangkat')
+        e('button', { className: `tab-btn ${tab === 'pengajuan' ? 'active' : ''}`, onClick: () => setTab('pengajuan') }, 'Pengajuan'),
+        e('button', { className: `tab-btn ${tab === 'kandidat' ? 'active' : ''}`, onClick: () => setTab('kandidat') }, 'Kandidat Naik Pangkat')
       ),
       tab === 'pengajuan' &&
         e(
-          React.Fragment,
+          'div',
           null,
           formOpen &&
             e(
@@ -1604,7 +1717,7 @@ table { border-collapse: collapse; width: 100%; }
                 e(
                   'div',
                   null,
-                  e('label', { style: fieldStyle() }, 'Nama Pegawai'),
+                  e('label', { style: { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Nama Pegawai'),
                   e(
                     'select',
                     { className: 'select-filter', style: { width: '100%' }, value: namaTerpilih, onChange: (ev) => setNamaTerpilih(ev.target.value), required: true },
@@ -1615,13 +1728,13 @@ table { border-collapse: collapse; width: 100%; }
                 e(
                   'div',
                   null,
-                  e('label', { style: fieldStyle() }, 'Data PAK Terakhir'),
+                  e('label', { style: { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Data PAK Terakhir'),
                   e('div', { className: 'input-search', style: { width: '100%' } }, e('input', { placeholder: 'No. & tanggal PAK terakhir', value: pak, onChange: (ev) => setPak(ev.target.value) }))
                 ),
                 e(
                   'div',
                   null,
-                  e('label', { style: fieldStyle() }, 'Periode Kenaikan Pangkat'),
+                  e('label', { style: { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Periode Kenaikan Pangkat'),
                   e(
                     'select',
                     { className: 'select-filter', style: { width: '100%' }, value: periode, onChange: (ev) => setPeriode(ev.target.value) },
@@ -1631,7 +1744,7 @@ table { border-collapse: collapse; width: 100%; }
                 e(
                   'div',
                   null,
-                  e('label', { style: fieldStyle() }, 'SK Pangkat Terakhir'),
+                  e('label', { style: { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'SK Pangkat Terakhir'),
                   e('div', { className: 'input-search', style: { width: '100%' } }, e('input', { placeholder: 'No. SK pangkat terakhir', value: skTerakhir, onChange: (ev) => setSkTerakhir(ev.target.value) }))
                 )
               ),
@@ -1683,7 +1796,12 @@ table { border-collapse: collapse; width: 100%; }
           e(
             'div',
             { className: 'filter-bar' },
-            e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama pegawai...', value: query, onChange: (ev) => setQuery(ev.target.value) }))
+            e(
+              'div',
+              { className: 'input-search' },
+              e(IconSearch, { size: 15 }),
+              e('input', { placeholder: 'Cari nama pegawai...', value: cariBaris, onChange: (ev) => setCariBaris(ev.target.value) })
+            )
           ),
           e(
             'div',
@@ -1698,8 +1816,8 @@ table { border-collapse: collapse; width: 100%; }
                 e(
                   'tbody',
                   null,
-                  barisTersaring.length
-                    ? barisTersaring.map((k, i) =>
+                  semuaBaris.length
+                    ? semuaBaris.map((k, i) =>
                         e(
                           'tr',
                           { key: i },
@@ -1717,20 +1835,24 @@ table { border-collapse: collapse; width: 100%; }
             )
           )
         ),
-      tab === 'kandidat' && e(KandidatNaikPangkatTab, { pegawai })
+      tab === 'kandidat' && e(TabKandidatPangkat, { pegawai })
     );
   }
 
-  /* ============================== KANDIDAT NAIK PANGKAT (TAB) ============================== */
-  function KandidatNaikPangkatTab({ pegawai }) {
+  /* ============================== TAB: KANDIDAT NAIK PANGKAT ============================== */
+  function TabKandidatPangkat({ pegawai }) {
     const [tampilkanSemua, setTampilkanSemua] = useState(false);
-    const [query, setQuery] = useState('');
+    const [cari, setCari] = useState('');
 
-    const baris = useMemo(() => pegawai.map((p) => ({ p, k: kelayakanPangkat(p) })), [pegawai]);
+    const baris = useMemo(() => {
+      return pegawai.map((p) => ({ p, k: kelayakanPangkat(p) }));
+    }, [pegawai]);
+
     const siap = baris.filter((b) => b.k.status === 'Siap Diusulkan');
-    const dasar = tampilkanSemua ? baris : siap;
-    const tampil = dasar.filter((b) => !query || (b.p.nama || '').toLowerCase().includes(query.toLowerCase()));
     const belumLengkap = baris.filter((b) => b.k.status === 'Data Belum Lengkap').length;
+    const tampil = (tampilkanSemua ? baris : siap).filter(
+      (b) => !cari || b.p.nama.toLowerCase().includes(cari.toLowerCase())
+    );
 
     return e(
       'div',
@@ -1761,7 +1883,12 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'filter-bar' },
-        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama pegawai...', value: query, onChange: (ev) => setQuery(ev.target.value) })),
+        e(
+          'div',
+          { className: 'input-search' },
+          e(IconSearch, { size: 15 }),
+          e('input', { placeholder: 'Cari nama pegawai...', value: cari, onChange: (ev) => setCari(ev.target.value) })
+        ),
         e('button', { className: 'btn btn-outline', onClick: () => setTampilkanSemua((v) => !v) }, tampilkanSemua ? 'Tampilkan yang Siap Saja' : 'Tampilkan Semua Pegawai')
       ),
       e(
@@ -1809,12 +1936,12 @@ table { border-collapse: collapse; width: 100%; }
     const [editingNip, setEditingNip] = useState(null);
     const [pakDraft, setPakDraft] = useState('');
     const [folderDraft, setFolderDraft] = useState('');
-    const [query, setQuery] = useState('');
+    const [cari, setCari] = useState('');
 
     const daftarJF = useMemo(() => pegawai.filter((p) => jenisKepegawaian(p.jabatan) === 'Fungsional'), [pegawai]);
-    const filtered = useMemo(
-      () => daftarJF.filter((p) => !query || (p.nama || '').toLowerCase().includes(query.toLowerCase()) || (p.jabatan || '').toLowerCase().includes(query.toLowerCase())),
-      [daftarJF, query]
+    const tampil = useMemo(
+      () => daftarJF.filter((p) => !cari || p.nama.toLowerCase().includes(cari.toLowerCase()) || p.jabatan.toLowerCase().includes(cari.toLowerCase())),
+      [daftarJF, cari]
     );
 
     function mulaiEdit(p) {
@@ -1826,7 +1953,6 @@ table { border-collapse: collapse; width: 100%; }
     function simpanEdit(p) {
       onSavePegawai({ ...p, besaranPAK: pakDraft, folderPAK: folderDraft }, p);
       setEditingNip(null);
-      showToast(`Data PAK ${p.nama} tersimpan.`);
     }
 
     return e(
@@ -1840,7 +1966,12 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'filter-bar' },
-        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama atau jabatan fungsional...', value: query, onChange: (ev) => setQuery(ev.target.value) }))
+        e(
+          'div',
+          { className: 'input-search' },
+          e(IconSearch, { size: 15 }),
+          e('input', { placeholder: 'Cari nama atau jabatan fungsional...', value: cari, onChange: (ev) => setCari(ev.target.value) })
+        )
       ),
       e(
         'div',
@@ -1859,8 +1990,8 @@ table { border-collapse: collapse; width: 100%; }
             e(
               'tbody',
               null,
-              filtered.length
-                ? filtered.map((p, i) => {
+              tampil.length
+                ? tampil.map((p, i) => {
                     const sedangDiedit = editingNip === p.nip;
                     return e(
                       'tr',
@@ -1887,14 +2018,14 @@ table { border-collapse: collapse; width: 100%; }
                       ),
                       e(
                         'td',
-                        { 'data-label': '' },
+                        { 'data-label': 'Aksi' },
                         sedangDiedit
-                          ? e('button', { className: 'btn-action-green', onClick: () => simpanEdit(p) }, e(IconCheck, { size: 13 }), 'Simpan')
-                          : e('button', { className: 'btn-action-green', onClick: () => mulaiEdit(p), title: 'Kelola PAK' }, e(IconEdit, { size: 13 }))
+                          ? e('button', { className: 'row-link', style: { background: 'none', border: 'none' }, onClick: () => simpanEdit(p) }, 'Simpan')
+                          : e('button', { className: 'btn-icon btn-icon-sm', title: 'Kelola PAK & folder', 'aria-label': 'Kelola', onClick: () => mulaiEdit(p) }, e(IconEdit, { size: 14 }))
                       )
                     );
                   })
-                : e('tr', null, e('td', { colSpan: 7, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada pegawai dengan jabatan fungsional pada data saat ini.'))
+                : e('tr', null, e('td', { colSpan: 7, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada pegawai dengan jabatan fungsional yang cocok.'))
             )
           )
         )
@@ -1903,8 +2034,6 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   function Presensi() {
-    const [query, setQuery] = useState('');
-    const filtered = useMemo(() => DATA_PRESENSI.filter((p) => !query || (p.nama || '').toLowerCase().includes(query.toLowerCase())), [query]);
     return e(
       'div',
       null,
@@ -1918,11 +2047,6 @@ table { border-collapse: collapse; width: 100%; }
       ),
       e(
         'div',
-        { className: 'filter-bar' },
-        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama pegawai...', value: query, onChange: (ev) => setQuery(ev.target.value) }))
-      ),
-      e(
-        'div',
         { className: 'card' },
         e(
           'div',
@@ -1930,23 +2054,20 @@ table { border-collapse: collapse; width: 100%; }
           e(
             'table',
             { className: 'data-table' },
-            e('thead', null, e('tr', null, e('th', null, 'No'), e('th', null, 'Nama Pegawai'), e('th', null, 'Jam Masuk'), e('th', null, 'Jam Pulang'), e('th', null, 'Status'))),
+            e('thead', null, e('tr', null, e('th', null, 'Nama Pegawai'), e('th', null, 'Jam Masuk'), e('th', null, 'Jam Pulang'), e('th', null, 'Status'))),
             e(
               'tbody',
               null,
-              filtered.length
-                ? filtered.map((p, i) =>
-                    e(
-                      'tr',
-                      { key: i },
-                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
-                      e('td', { 'data-label': 'Nama Pegawai', style: { fontWeight: 600 } }, p.nama),
-                      e('td', { 'data-label': 'Jam Masuk' }, p.masuk),
-                      e('td', { 'data-label': 'Jam Pulang' }, p.pulang),
-                      e('td', { 'data-label': 'Status' }, e(Badge, { status: p.status }))
-                    )
-                  )
-                : e('tr', null, e('td', { colSpan: 5, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada data yang cocok.'))
+              DATA_PRESENSI.map((p, i) =>
+                e(
+                  'tr',
+                  { key: i },
+                  e('td', { style: { fontWeight: 600 } }, p.nama),
+                  e('td', null, p.masuk),
+                  e('td', null, p.pulang),
+                  e('td', null, e(Badge, { status: p.status }))
+                )
+              )
             )
           )
         )
@@ -2063,7 +2184,7 @@ table { border-collapse: collapse; width: 100%; }
       page = e(DataPegawai, { pegawai: pegawaiState.data, sumber: pegawaiState.sumber, onImport: handleImport, onReset: handleReset, onSavePegawai: handleSavePegawai, showToast });
     else if (hash === '#/kepegawaian/cuti') page = e(Cuti);
     else if (hash === '#/kepegawaian/kenaikan-pangkat') page = e(KenaikanPangkat, { pegawai: pegawaiState.data, showToast });
-    else if (hash === '#/kepegawaian/kandidat-pangkat') page = e(KandidatNaikPangkat, { pegawai: pegawaiState.data });
+    else if (hash === '#/kepegawaian/gaji-berkala') page = e(GajiBerkala, { pegawai: pegawaiState.data });
     else if (hash === '#/kepegawaian/inventaris-jf') page = e(InventarisJF, { pegawai: pegawaiState.data, onSavePegawai: handleSavePegawai, showToast });
     else if (hash === '#/kepegawaian/presensi') page = e(Presensi);
     else if (hash === '#/simoris') page = e(Simoris);
