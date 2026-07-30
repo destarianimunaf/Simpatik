@@ -363,16 +363,18 @@ table { border-collapse: collapse; width: 100%; }
 .public-shell { min-height: 100vh; background: var(--color-bg); }
 .public-header {
   display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
-  padding: 16px 24px; background: var(--color-surface); border-bottom: 1px solid var(--color-border);
-  position: sticky; top: 0; z-index: 20;
+  padding: 18px 28px; background: linear-gradient(120deg, var(--color-maroon), var(--color-maroon-dark));
+  position: sticky; top: 0; z-index: 20; box-shadow: var(--shadow-md);
 }
 .public-header__brand { display: flex; align-items: center; gap: 12px; }
-.public-header__title { font-weight: 700; font-size: 15px; }
-.public-header__subtitle { font-size: 11.5px; color: var(--color-text-muted); }
+.public-header__title { font-weight: 700; font-size: 16px; color: #fff; }
+.public-header__subtitle { font-size: 11.5px; color: rgba(255,255,255,0.75); }
+.public-header .btn-primary { background: var(--color-gold); color: #3a2c05; }
+.public-header .btn-primary:hover { background: #ddb833; }
 .public-content { max-width: 1200px; margin: 0 auto; padding: 24px; }
 @media (max-width: 700px) {
   .public-header { padding: 14px 16px; }
-  .public-content { padding: 16px; }
+  .public-content { padding: 14px; }
 }
 
 /* ===== Modal ===== */
@@ -406,6 +408,8 @@ table { border-collapse: collapse; width: 100%; }
 .jadwal-piket th { text-align: center; white-space: nowrap; }
 .jadwal-piket-cell { min-width: 108px; vertical-align: top; padding: 6px !important; cursor: pointer; }
 .jadwal-piket-cell:hover { background: var(--color-primary-soft); }
+.jadwal-piket-cell--readonly { cursor: default; }
+.jadwal-piket-cell--readonly:hover { background: transparent; }
 .jadwal-piket-tag {
   background: var(--color-primary-soft); color: var(--color-primary-dark); border-radius: 8px;
   padding: 4px 6px; font-size: 11px; margin-bottom: 4px; line-height: 1.35; text-align: left;
@@ -794,13 +798,10 @@ table { border-collapse: collapse; width: 100%; }
   // peminjam, nama kegiatan. Spreadsheet ini adalah sumber data utama — admin cukup menambah baris
   // di sana, lalu aplikasi menariknya lewat endpoint CSV publik Google Sheets (gviz), tanpa API key.
   const DAFTAR_RUANGAN = ['Aula Kanwil', 'Ruang Rapat Utama Lt. 2', 'Ruang Rapat Divisi Pelayanan Hukum', 'Ruang Rapat Divisi Peraturan Perundang-undangan', 'Ruang VIP'];
-  // OPSIONAL: sinkron TULIS (tambah baris) otomatis ke Google Sheets lewat Google Apps Script Web
-  // App (tanpa perlu simpan API key/password apa pun di kode ini — hanya URL endpoint publik dari
-  // skrip Anda sendiri). Kosongkan jika belum diaktifkan; pembacaan (sinkron baca) tetap jalan
-  // lewat endpoint CSV publik di atas selama sheet dibagikan "Anyone with the link can view".
-  // Cara aktifkan tulis: buka spreadsheet PINJAM RUANGAN > Extensions > Apps Script, tempel skrip
-  // "doPost" yang menambah baris ke sheet, lalu Deploy > Web App (akses: Anyone), tempel URL-nya di sini.
-  const SHEET_WEBHOOK_PEMINJAMAN_RUANG = '';
+  // OPSIONAL: sinkron TULIS (tambah/ubah/hapus baris) otomatis ke Google Sheets lewat Google Apps
+  // Script Web App — tempel "Code.gs" (disertakan terpisah) di Extensions > Apps Script pada
+  // spreadsheet PINJAM RUANGAN, Deploy > Web app (akses: Anyone), lalu tempel URL-nya di sini.
+  const SHEET_WEBHOOK_PEMINJAMAN_RUANG = 'https://script.google.com/macros/s/AKfycby911kxftOLDc0H-S4w2d0hwT_wnMjET3RWVJTxnVCEGGZGlCn76cAR7jJ-QRkws2VS/exec';
 
   const BADGE_CLASS = {
     Aktif: 'badge-success', Cuti: 'badge-warning', Sakit: 'badge-danger', 'Dinas Luar': 'badge-info',
@@ -1291,7 +1292,7 @@ table { border-collapse: collapse; width: 100%; }
         e(
           'div',
           { className: 'import-note', style: { marginTop: 14 } },
-          'TMT Pangkat Terakhir dipakai untuk menghitung kelayakan usul kenaikan pangkat di halaman Kandidat Naik Pangkat. Data tersimpan di browser perangkat ini (belum tersambung basis data pusat).'
+          'TMT Pangkat Terakhir dipakai menghitung kelayakan usul kenaikan pangkat.'
         ),
         e(
           'div',
@@ -1726,15 +1727,13 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'import-note' },
-        'Format kolom yang dikenali: ',
+        'Kolom yang dikenali: ',
         e('strong', null, 'nama, nip, jabatan, golongan, unit, status'),
-        ' (urutan bebas, nama kolom tidak harus persis sama). Jika file dari SIMPEG berformat .xlsx, buka di Excel/Google Sheets lalu simpan ulang sebagai .csv sebelum diunggah. Data pegawai bersumber dari ',
-        e('a', { href: SHEET_PEGAWAI_URL, target: '_blank', rel: 'noopener noreferrer' }, 'Google Sheets Daftar Pegawai'),
-        ' (selaras dengan ',
-        e('a', { href: SIMPEG_DOSSIER_URL, target: '_blank', rel: 'noopener noreferrer' }, 'SIMPEG'),
-        ') \u2014 tambahkan/ubah baris langsung di spreadsheet tersebut, lalu klik ',
-        e('strong', null, 'Sinkron dari Spreadsheet'),
-        ' di atas untuk menariknya ke aplikasi ini. TMT Pangkat, besaran PAK, dan folder PAK yang sudah Anda isi di aplikasi tidak akan hilang saat sinkron karena kolom itu digabung, bukan ditimpa.'
+        '. Sumber data: ',
+        e('a', { href: SHEET_PEGAWAI_URL, target: '_blank', rel: 'noopener noreferrer' }, 'Google Sheets'),
+        ' \u2014 ubah di sana lalu klik ',
+        e('strong', null, 'Sinkron'),
+        '.'
       ),
       e(
         'div',
@@ -2010,13 +2009,11 @@ table { border-collapse: collapse; width: 100%; }
               e(
                 'div',
                 { className: 'import-note' },
-                'Kelengkapan berkas (PAK, SK, dsb.) akan diverifikasi ulang berdasarkan ',
-                e('strong', null, 'dossier checklist'),
-                ' yang menyusul dari Anda. Cek kelengkapan dokumen di ',
-                e('a', { href: SIMPEG_DOSSIER_URL, target: '_blank', rel: 'noopener noreferrer' }, 'dossier pegawai SIMPEG'),
-                ' (login memakai akun SIMPEG Anda sendiri \u2014 kredensial tidak disimpan di aplikasi ini demi keamanan). Berkas fisik/scan hasil pengajuan diunggah manual ke ',
-                e('a', { href: DRIVE_KENAIKAN_PANGKAT_URL, target: '_blank', rel: 'noopener noreferrer' }, 'folder Drive Kenaikan Pangkat'),
-                ' — aplikasi satu-file ini belum terhubung ke Google Drive API maupun API SIMPEG, jadi kedua langkah tersebut dilakukan manual di tab baru.'
+                'Berkas fisik diunggah manual ke ',
+                e('a', { href: DRIVE_KENAIKAN_PANGKAT_URL, target: '_blank', rel: 'noopener noreferrer' }, 'folder Drive'),
+                '. Cek kelengkapan di ',
+                e('a', { href: SIMPEG_DOSSIER_URL, target: '_blank', rel: 'noopener noreferrer' }, 'dossier SIMPEG'),
+                '.'
               ),
               e(
                 'div',
@@ -2094,18 +2091,10 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'import-note' },
-        e('strong', null, 'Dasar hukum: '),
-        'Peraturan BKN No. 4 Tahun 2025 tentang Periodisasi Kenaikan Pangkat PNS \u2014 usul kenaikan pangkat kini dibuka ',
-        e('strong', null, '12 kali setahun (setiap tanggal 1 tiap bulan)'),
-        '. Syarat pangkat ',
-        e('strong', null, 'reguler'),
-        ` minimal ${SYARAT_TAHUN_REGULER} tahun dalam pangkat terakhir; pangkat `,
-        e('strong', null, 'pilihan/jabatan fungsional'),
-        ` minimal ${SYARAT_TAHUN_FUNGSIONAL} tahun dalam pangkat terakhir + Angka Kredit kumulatif terpenuhi + SKP bernilai baik 2 tahun terakhir. Periode usul terdekat: `,
+        `Syarat masa kerja: reguler ${SYARAT_TAHUN_REGULER} tahun, fungsional ${SYARAT_TAHUN_FUNGSIONAL} tahun. Periode usul terdekat: `,
         e('strong', null, periodeUsulTerdekat()),
         '.',
-        belumLengkap > 0 &&
-          e('span', null, ` ${belumLengkap} pegawai belum punya data TMT Pangkat Terakhir \u2014 lengkapi lewat menu Edit Data di Data Pegawai agar bisa dihitung.`)
+        belumLengkap > 0 && e('span', null, ` ${belumLengkap} pegawai belum punya TMT Pangkat.`)
       ),
       e(
         'div',
@@ -2289,13 +2278,10 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'import-note' },
-        e('strong', null, 'Dasar hukum: '),
-        'Peraturan Pemerintah No. 5 Tahun 2024 tentang gaji pokok PNS (masih berlaku, belum ada PP pengganti per pengecekan terakhir). KGB diberikan otomatis tiap ',
-        e('strong', null, `${KGB_TAHUN} tahun`),
-        ' sekali selama penilaian kinerja minimal "baik", dihitung dari TMT golongan terakhir yang sama dipakai di menu Kenaikan Pangkat. ',
-        e('strong', null, 'Catatan: '),
-        'nilai gaji pokok di sini adalah estimasi hasil interpolasi dari titik MKG 0 dan MKG 32 resmi PP 5/2024 (aplikasi tidak menyimpan seluruh 17 baris tabel resmi) — verifikasi angka pasti di aplikasi GPP/SIMPEG sebelum menerbitkan SK final.',
-        belumLengkap > 0 && e('span', null, ` ${belumLengkap} pegawai belum punya TMT Pangkat Terakhir \u2014 lengkapi lewat Edit Data di Data Pegawai.`)
+        `Berdasar PP 5/2024. KGB otomatis tiap ${KGB_TAHUN} tahun. `,
+        e('strong', null, 'Estimasi'),
+        ' (interpolasi MKG 0\u201332) \u2014 verifikasi di GPP/SIMPEG sebelum terbit SK.',
+        belumLengkap > 0 && e('span', null, ` ${belumLengkap} pegawai belum punya TMT Pangkat.`)
       ),
       e(
         'div',
@@ -2613,7 +2599,7 @@ table { border-collapse: collapse; width: 100%; }
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
   }
 
-  function PeminjamanRuang({ showToast }) {
+  function PeminjamanRuang({ showToast, isAdmin }) {
     const [daftarLokal, setDaftarLokal] = useState(() => muatPeminjamanRuang());
     const [daftarSheet, setDaftarSheet] = useState(() => {
       try { return JSON.parse(localStorage.getItem(STORAGE_KEY_PEMINJAMAN_RUANG_CACHE) || '[]'); } catch (err) { return []; }
@@ -2636,10 +2622,10 @@ table { border-collapse: collapse; width: 100%; }
         setDaftarSheet(hasil);
         localStorage.setItem(STORAGE_KEY_PEMINJAMAN_RUANG_CACHE, JSON.stringify(hasil));
         setTerakhirSinkron(new Date());
-        if (!diam) showToast(`Sinkron berhasil \u2014 ${hasil.length} jadwal dari spreadsheet.`);
+        if (!diam) showToast(`Sinkron berhasil \u2014 ${hasil.length} jadwal.`);
       } catch (err) {
-        setErrorSinkron('Gagal menyinkron spreadsheet. Pastikan sudah dibagikan "Anyone with the link can view".');
-        if (!diam) showToast('Sinkron dari spreadsheet gagal, memakai data tersimpan terakhir.');
+        setErrorSinkron('Gagal menyinkron spreadsheet.');
+        if (!diam) showToast('Sinkron gagal, memakai data tersimpan terakhir.');
       } finally {
         setSinkronBerjalan(false);
       }
@@ -2660,31 +2646,28 @@ table { border-collapse: collapse; width: 100%; }
     const ruanganTampil = filterRuangan === 'Semua' ? DAFTAR_RUANGAN : [filterRuangan];
 
     function handleSave(data, original) {
+      const id = original ? original.id : `pr-${Date.now()}`;
+      const record = { ...data, id, sumber: 'lokal' };
       setDaftarLokal((prev) => {
-        let next;
-        if (original) {
-          next = prev.map((b) => (b.id === original.id ? { ...b, ...data } : b));
-        } else {
-          next = [...prev, { ...data, id: `pr-${Date.now()}`, sumber: 'lokal' }];
-        }
+        const next = original ? prev.map((b) => (b.id === original.id ? record : b)) : [...prev, record];
         simpanPeminjamanRuang(next);
         return next;
       });
-      sinkronKeSheet(SHEET_WEBHOOK_PEMINJAMAN_RUANG, { aksi: original ? 'edit' : 'tambah', ...data });
-      showToast(original ? 'Perubahan jadwal peminjaman disimpan.' : `Peminjaman ${data.ruangan} tersimpan. Salin juga ke spreadsheet PINJAM RUANGAN agar tercatat sebagai master data.`);
+      sinkronKeSheet(SHEET_WEBHOOK_PEMINJAMAN_RUANG, { aksi: original ? 'edit' : 'tambah', ...record });
+      showToast(original ? 'Perubahan disimpan.' : `Peminjaman ${data.ruangan} tersimpan.`);
       setFormState(null);
     }
 
     function handleDelete(b) {
-      if (b.sumber === 'sheet') { showToast('Jadwal ini berasal dari spreadsheet \u2014 hapus/ubah langsung di sana.'); return; }
-      if (!window.confirm(`Hapus jadwal peminjaman "${b.ruangan}" oleh ${b.peminjam} pada ${b.tanggal}?`)) return;
+      if (b.sumber === 'sheet') { showToast('Jadwal ini bersumber dari spreadsheet.'); return; }
+      if (!window.confirm(`Hapus jadwal "${b.ruangan}" oleh ${b.peminjam} pada ${b.tanggal}?`)) return;
       setDaftarLokal((prev) => {
         const next = prev.filter((x) => x.id !== b.id);
         simpanPeminjamanRuang(next);
         return next;
       });
       sinkronKeSheet(SHEET_WEBHOOK_PEMINJAMAN_RUANG, { aksi: 'hapus', id: b.id });
-      showToast('Jadwal peminjaman dihapus.');
+      showToast('Jadwal dihapus.');
     }
 
     function handleEkspor() {
@@ -2693,7 +2676,6 @@ table { border-collapse: collapse; width: 100%; }
         ['Nama Ruangan', 'Tanggal', 'Jadwal Jam', 'Peminjam', 'Nama Kegiatan'],
         terurut.map((b) => [b.ruangan, b.tanggal, `${b.jamMulai}-${b.jamSelesai}`, b.peminjam, b.kegiatan || ''])
       );
-      showToast('CSV diunduh dengan kolom yang sama seperti spreadsheet PINJAM RUANGAN \u2014 tinggal impor/tempel.');
     }
 
     return e(
@@ -2702,24 +2684,15 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'page-header' },
-        e('div', null, e('h1', null, 'Peminjaman Ruang'), e('p', null, 'Jadwal pemakaian ruangan Kanwil Kemenkum Lampung \u2014 sistem otomatis menolak jadwal yang bentrok.')),
-        e('button', { className: 'btn btn-primary', onClick: () => setFormState({ initial: null }) }, e(IconPlus, { size: 15 }), 'Ajukan Peminjaman')
+        e('div', null, e('h1', null, 'Peminjaman Ruang'), e('p', null, 'Jadwal pemakaian ruangan Kanwil Kemenkum Lampung.')),
+        isAdmin && e('button', { className: 'btn btn-primary', onClick: () => setFormState({ initial: null }) }, e(IconPlus, { size: 15 }), 'Ajukan Peminjaman')
       ),
-      e(
-        'div',
-        { className: 'import-note' },
-        e('strong', null, 'Spreadsheet PINJAM RUANGAN'),
-        ' adalah master data jadwal ini \u2014 aplikasi menariknya otomatis lewat tautan publik Google Sheets (tanpa API key). ',
-        terakhirSinkron
-          ? `Sinkron terakhir: ${terakhirSinkron.toLocaleTimeString('id-ID')}. `
-          : '',
-        errorSinkron ? e('span', { style: { color: 'var(--color-danger)' } }, errorSinkron + ' ') : '',
-        'Tambahan lewat tombol "Ajukan Peminjaman" tersimpan lokal di perangkat ini \u2014 salin juga ke ',
-        e('a', { href: SHEET_PINJAM_RUANGAN_URL, target: '_blank', rel: 'noopener noreferrer' }, 'spreadsheet PINJAM RUANGAN'),
-        ' (atau ',
-        e('a', { href: DRIVE_PINJAM_RUANG_URL, target: '_blank', rel: 'noopener noreferrer' }, 'buka folder Drive-nya'),
-        ') agar tercatat sebagai master data resmi.'
-      ),
+      (errorSinkron || terakhirSinkron) &&
+        e(
+          'div',
+          { style: { fontSize: 11.5, color: errorSinkron ? 'var(--color-danger)' : 'var(--color-text-faint)', marginBottom: 12 } },
+          errorSinkron || `Sinkron terakhir ${terakhirSinkron.toLocaleTimeString('id-ID')}`
+        ),
       e(
         'div',
         { className: 'filter-bar' },
@@ -2735,12 +2708,12 @@ table { border-collapse: collapse; width: 100%; }
           e('button', { className: `btn ${tampilan === 'kalender' ? 'btn-primary' : 'btn-outline'}`, onClick: () => setTampilan('kalender') }, e(IconCalendar, { size: 15 }), 'Kalender'),
           e('button', { className: `btn ${tampilan === 'daftar' ? 'btn-primary' : 'btn-outline'}`, onClick: () => setTampilan('daftar') }, 'Daftar')
         ),
-        e('button', { className: 'btn btn-outline', disabled: sinkronBerjalan, onClick: () => sinkronDariSheet(false) }, e(IconRefresh, { size: 15 }), sinkronBerjalan ? 'Menyinkron...' : 'Sinkron Sekarang'),
-        e('button', { className: 'btn btn-outline', onClick: handleEkspor }, e(IconDownload, { size: 15 }), 'Ekspor CSV')
+        e('button', { className: 'btn btn-outline', disabled: sinkronBerjalan, onClick: () => sinkronDariSheet(false) }, e(IconRefresh, { size: 15 }), sinkronBerjalan ? 'Menyinkron...' : 'Sinkron'),
+        isAdmin && e('button', { className: 'btn btn-outline', onClick: handleEkspor }, e(IconDownload, { size: 15 }), 'Ekspor CSV')
       ),
       tampilan === 'kalender'
         ? e(JadwalKalender, {
-            hariMinggu, ruanganTampil, tampil, awalTampil, setAwalTampil,
+            hariMinggu, ruanganTampil, tampil, awalTampil, setAwalTampil, isAdmin,
             onPilihSlot: (ruangan, tanggal) => setFormState({ initial: null, prefill: { ruangan, tanggal } }),
           })
         : e(
@@ -2759,7 +2732,7 @@ table { border-collapse: collapse; width: 100%; }
                     'tr',
                     null,
                     e('th', null, 'No'), e('th', null, 'Ruangan'), e('th', null, 'Hari, Tanggal'), e('th', null, 'Jam'),
-                    e('th', null, 'Peminjam'), e('th', null, 'Kegiatan'), e('th', null, 'Sumber'), e('th', null, '')
+                    e('th', null, 'Peminjam'), e('th', null, 'Kegiatan'), e('th', null, 'Sumber'), isAdmin && e('th', null, '')
                   )
                 ),
                 e(
@@ -2777,28 +2750,29 @@ table { border-collapse: collapse; width: 100%; }
                           e('td', { 'data-label': 'Peminjam' }, b.peminjam),
                           e('td', { 'data-label': 'Kegiatan' }, b.kegiatan || '-'),
                           e('td', { 'data-label': 'Sumber' }, e(Badge, { status: b.sumber === 'sheet' ? 'Spreadsheet' : 'Lokal' })),
-                          e(
-                            'td',
-                            { 'data-label': '', style: { display: 'flex', gap: 6 } },
-                            b.sumber !== 'sheet' &&
-                              e(React.Fragment, null,
-                                e('button', { className: 'btn-action-green', onClick: () => setFormState({ initial: b }), title: 'Edit' }, e(IconEdit, { size: 13 })),
-                                e('button', { className: 'btn-action-red', onClick: () => handleDelete(b), title: 'Hapus' }, e(IconTrash, { size: 13 }))
-                              )
-                          )
+                          isAdmin &&
+                            e(
+                              'td',
+                              { 'data-label': '', style: { display: 'flex', gap: 6 } },
+                              b.sumber !== 'sheet' &&
+                                e(React.Fragment, null,
+                                  e('button', { className: 'btn-action-green', onClick: () => setFormState({ initial: b }), title: 'Edit' }, e(IconEdit, { size: 13 })),
+                                  e('button', { className: 'btn-action-red', onClick: () => handleDelete(b), title: 'Hapus' }, e(IconTrash, { size: 13 }))
+                                )
+                            )
                         )
                       )
-                    : e('tr', null, e('td', { colSpan: 8, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Belum ada jadwal peminjaman ruang.'))
+                    : e('tr', null, e('td', { colSpan: isAdmin ? 8 : 7, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Belum ada jadwal peminjaman ruang.'))
                 )
               )
             )
           ),
-      formState && e(PeminjamanRuangForm, { initial: formState.initial, prefill: formState.prefill, daftar, onClose: () => setFormState(null), onSave: handleSave })
+      isAdmin && formState && e(PeminjamanRuangForm, { initial: formState.initial, prefill: formState.prefill, daftar, onClose: () => setFormState(null), onSave: handleSave })
     );
   }
 
   /* ============================== KALENDER JADWAL RUANG (ALA JADWAL PIKET) ============================== */
-  function JadwalKalender({ hariMinggu, ruanganTampil, tampil, awalTampil, setAwalTampil, onPilihSlot }) {
+  function JadwalKalender({ hariMinggu, ruanganTampil, tampil, awalTampil, setAwalTampil, onPilihSlot, isAdmin }) {
     const petaSlot = useMemo(() => {
       const peta = {};
       tampil.forEach((b) => {
@@ -2855,10 +2829,10 @@ table { border-collapse: collapse; width: 100%; }
                   const isi = petaSlot[`${r}__${ymd}`] || [];
                   return e(
                     'td',
-                    { key: ymd, 'data-label': `${NAMA_HARI[h.getDay()]} ${ymd}`, className: 'jadwal-piket-cell', onClick: () => isi.length === 0 && onPilihSlot(r, ymd) },
+                    { key: ymd, 'data-label': `${NAMA_HARI[h.getDay()]} ${ymd}`, className: isAdmin ? 'jadwal-piket-cell' : 'jadwal-piket-cell jadwal-piket-cell--readonly', onClick: () => isAdmin && isi.length === 0 && onPilihSlot(r, ymd) },
                     isi.length
                       ? isi.map((b, i) => e('div', { key: i, className: 'jadwal-piket-tag', title: `${b.peminjam} \u2014 ${b.kegiatan || ''}` }, e('strong', null, `${b.jamMulai}-${b.jamSelesai}`), e('div', null, b.peminjam)))
-                      : e('span', { className: 'jadwal-piket-kosong' }, '+')
+                      : e('span', { className: 'jadwal-piket-kosong' }, isAdmin ? '+' : '\u2014')
                   );
                 })
               )
@@ -3044,11 +3018,11 @@ table { border-collapse: collapse; width: 100%; }
               'div',
               { className: 'public-header__brand' },
               e('div', { className: 'sidebar-brand__badge' }, 'SP'),
-              e('div', null, e('div', { className: 'public-header__title' }, 'Peminjaman Ruang'), e('div', { className: 'public-header__subtitle' }, 'SIMPATIK \u2014 Kanwil Kemenkum Lampung'))
+              e('div', null, e('div', { className: 'public-header__title' }, 'Jadwal Peminjaman Ruang'), e('div', { className: 'public-header__subtitle' }, 'Kanwil Kemenkum Lampung'))
             ),
-            e('button', { className: 'btn btn-primary', onClick: () => setShowLoginScreen(true) }, e(IconLock, { size: 15 }), 'Masuk sebagai Admin')
+            e('button', { className: 'btn btn-primary', onClick: () => setShowLoginScreen(true) }, e(IconLock, { size: 15 }), 'Masuk Admin')
           ),
-          e('div', { className: 'public-content' }, e(PeminjamanRuang, { showToast }))
+          e('div', { className: 'public-content' }, e(PeminjamanRuang, { showToast, isAdmin: false }))
         ),
         e('div', { className: `toast ${toast ? 'show' : ''}` }, toast)
       );
@@ -3066,7 +3040,7 @@ table { border-collapse: collapse; width: 100%; }
     else if (hash === '#/kepegawaian/gaji-berkala') page = e(GajiBerkala, { pegawai: pegawaiState.data });
     else if (hash === '#/kepegawaian/inventaris-jf') page = e(InventarisJF, { pegawai: pegawaiState.data, onSavePegawai: handleSavePegawai, showToast });
     else if (hash === '#/kepegawaian/presensi') page = e(Presensi);
-    else if (hash === '#/fasilitas/peminjaman-ruang') page = e(PeminjamanRuang, { showToast });
+    else if (hash === '#/fasilitas/peminjaman-ruang') page = e(PeminjamanRuang, { showToast, isAdmin: true });
     else if (hash === '#/simoris') page = e(Simoris);
     else page = e(NotFound);
 
