@@ -197,6 +197,30 @@ table { border-collapse: collapse; width: 100%; }
   border-radius: 50%; background: var(--color-danger); border: 1.5px solid var(--color-surface);
 }
 
+/* ===== Notifikasi ===== */
+.notif-wrap { position: relative; flex-shrink: 0; }
+.notif-panel {
+  position: absolute; top: calc(100% + 8px); right: 0; width: 320px; max-width: 86vw;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg); z-index: 60; overflow: hidden;
+}
+.notif-panel__head {
+  display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border); font-size: 13px; font-weight: 700;
+}
+.notif-panel__clear { background: none; border: none; color: var(--color-text-faint); font-size: 11.5px; font-weight: 600; cursor: pointer; }
+.notif-panel__clear:hover { color: var(--color-danger); }
+.notif-panel__list { max-height: 340px; overflow-y: auto; }
+.notif-item { display: flex; gap: 9px; padding: 11px 14px; border-bottom: 1px solid var(--color-border); align-items: flex-start; }
+.notif-item:last-child { border-bottom: none; }
+.notif-item.unread { background: var(--color-primary-soft); }
+.notif-item__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-primary); margin-top: 5px; flex-shrink: 0; opacity: 0; }
+.notif-item.unread .notif-item__dot { opacity: 1; }
+.notif-item__pesan { font-size: 12.5px; line-height: 1.4; color: var(--color-text); }
+.notif-item__waktu { font-size: 11px; color: var(--color-text-faint); margin-top: 2px; }
+.notif-empty { padding: 28px 16px; text-align: center; font-size: 12.5px; color: var(--color-text-faint); line-height: 1.5; }
+@media (max-width: 480px) { .notif-panel { position: fixed; top: 62px; right: 10px; left: 10px; width: auto; } }
+
 .topbar-user {
   display: flex; align-items: center; gap: 9px;
   padding: 5px 10px 5px 5px; border-radius: 999px;
@@ -329,52 +353,144 @@ table { border-collapse: collapse; width: 100%; }
 .toast.show { opacity: 1; transform: translateY(0); }
 
 /* ===== Login ===== */
+@keyframes loginRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes loginFade { from { opacity: 0; } to { opacity: 1; } }
+
 .login-wrap {
-  min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  padding: 24px; background: radial-gradient(circle at 20% 20%, #EEF0FF 0%, var(--color-bg) 55%);
+  min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  background: var(--color-surface);
 }
+
+.login-brand {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;
+  padding: 44px 48px; color: #F6E9C9;
+  background: linear-gradient(165deg, var(--color-maroon) 0%, var(--color-maroon-dark) 72%, #3B0C18 100%);
+}
+.login-brand__eyebrow { font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: #E7C77A; opacity: .85; animation: loginFade .6s ease both; }
+.login-brand__eyebrow div:last-child { color: #F6E9C9; opacity: .65; font-size: 10.5px; margin-top: 2px; letter-spacing: .08em; }
+.login-brand__mid { animation: loginRise .7s ease .05s both; }
+.login-brand__wordmark { font-size: 42px; font-weight: 800; letter-spacing: -.01em; line-height: 1.05; margin: 18px 0 10px; }
+.login-brand__tagline { font-size: 14px; color: #F0D9AE; opacity: .85; max-width: 360px; line-height: 1.55; }
+.login-brand__rule { width: 46px; height: 3px; background: var(--color-gold); border-radius: 2px; margin: 20px 0 0; }
+.login-siger { position: absolute; left: 0; right: 0; bottom: -6px; width: 100%; height: auto; opacity: .5; }
+.login-siger-glow { position: absolute; top: -120px; right: -120px; width: 360px; height: 360px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,162,39,.35) 0%, rgba(201,162,39,0) 70%); }
+.login-brand__foot { position: relative; font-size: 11px; color: #E9D3A0; opacity: .75; line-height: 1.6; animation: loginFade .8s ease .1s both; }
+
+.login-form-side { display: flex; align-items: center; justify-content: center; padding: 32px; }
 .login-card {
-  width: 100%; max-width: 380px; background: var(--color-surface); border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 32px 28px;
+  width: 100%; max-width: 380px; animation: loginRise .55s ease .08s both;
 }
-.login-badge {
-  width: 48px; height: 48px; border-radius: 12px;
+.login-card__badge {
+  width: 44px; height: 44px; border-radius: 12px;
   background: linear-gradient(145deg, var(--color-maroon), var(--color-maroon-dark));
   display: flex; align-items: center; justify-content: center; color: var(--color-gold);
-  font-weight: 800; font-size: 16px; margin-bottom: 16px;
+  font-weight: 800; font-size: 15px; margin-bottom: 20px;
 }
-.login-card h1 { font-size: 19px; margin: 0 0 4px; }
-.login-card p.login-sub { margin: 0 0 24px; font-size: 13px; color: var(--color-text-muted); }
-.login-field { margin-bottom: 14px; }
-.login-field label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
-.login-field .input-search { width: 100%; }
+.login-card h1 { font-size: 21px; margin: 0 0 5px; letter-spacing: -.01em; }
+.login-card p.login-sub { margin: 0 0 28px; font-size: 13px; color: var(--color-text-muted); line-height: 1.5; }
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 7px; }
+.login-field .input-search { width: 100%; transition: border-color .15s, box-shadow .15s; }
+.login-field .input-search:focus-within { border-color: var(--color-maroon); box-shadow: 0 0 0 3px rgba(122,23,48,.12); }
 .login-error {
-  background: var(--color-danger-soft); color: var(--color-danger); font-size: 12.5px;
-  padding: 9px 12px; border-radius: var(--radius-sm); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--color-danger-soft); color: var(--color-danger); font-size: 12.5px; font-weight: 500;
+  padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 16px;
 }
-.login-note { display: flex; gap: 8px; align-items: flex-start; margin-top: 18px; font-size: 11.5px; color: var(--color-text-faint); line-height: 1.5; }
+.login-submit {
+  width: 100%; justify-content: center; background: var(--color-maroon); border-color: var(--color-maroon);
+  padding: 11px 16px; font-size: 14px; font-weight: 700; letter-spacing: .01em;
+}
+.login-submit:hover { background: var(--color-maroon-dark); }
+.login-note { display: flex; gap: 8px; align-items: flex-start; margin-top: 20px; font-size: 11.5px; color: var(--color-text-faint); line-height: 1.55; }
 .login-back-link {
   display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer;
-  color: var(--color-text-muted); font-size: 12.5px; font-weight: 600; padding: 0; margin-bottom: 18px;
+  color: var(--color-text-muted); font-size: 12.5px; font-weight: 600; padding: 0; margin-bottom: 22px;
 }
-.login-back-link:hover { color: var(--color-primary-dark); }
+.login-back-link:hover { color: var(--color-maroon); }
+
+@media (max-width: 860px) {
+  .login-wrap { grid-template-columns: 1fr; }
+  .login-brand { padding: 28px 24px 64px; min-height: 220px; }
+  .login-brand__wordmark { font-size: 30px; margin: 12px 0 8px; }
+  .login-brand__tagline { font-size: 12.5px; }
+  .login-brand__foot { display: none; }
+  .login-form-side { padding: 28px 22px 40px; }
+}
 
 /* ===== Tampilan publik (sebelum login): Peminjaman Ruang ===== */
 .public-shell { min-height: 100vh; background: var(--color-bg); }
 .public-header {
   display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
-  padding: 18px 28px; background: linear-gradient(120deg, var(--color-maroon), var(--color-maroon-dark));
+  padding: 14px 28px; background: linear-gradient(120deg, var(--color-maroon), var(--color-maroon-dark));
   position: sticky; top: 0; z-index: 20; box-shadow: var(--shadow-md);
 }
-.public-header__brand { display: flex; align-items: center; gap: 12px; }
-.public-header__title { font-weight: 700; font-size: 16px; color: #fff; }
-.public-header__subtitle { font-size: 11.5px; color: rgba(255,255,255,0.75); }
-.public-header .btn-primary { background: var(--color-gold); color: #3a2c05; }
+.public-header__brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.public-header__title { font-weight: 700; font-size: 15.5px; color: #fff; line-height: 1.25; }
+.public-header__subtitle { font-size: 11px; color: rgba(255,255,255,0.72); }
+.public-header__right { display: flex; align-items: center; gap: 14px; }
+.public-header .btn-primary { background: var(--color-gold); color: #3a2c05; flex-shrink: 0; }
 .public-header .btn-primary:hover { background: #ddb833; }
-.public-content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.public-clock { text-align: right; color: #fff; line-height: 1.25; }
+.public-clock__time { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.public-clock__date { font-size: 10.5px; color: rgba(255,255,255,0.72); text-transform: capitalize; }
+.public-content { max-width: 1200px; margin: 0 auto; padding: 0 24px 28px; }
+
+/* --- Hero --- */
+.public-hero {
+  background: linear-gradient(150deg, var(--color-maroon) 0%, var(--color-maroon-dark) 62%, #3d0c17 100%);
+  margin: 0 -24px 24px; padding: 34px 24px 26px; color: #fff; position: relative; overflow: hidden;
+}
+.public-hero::before {
+  content: ''; position: absolute; right: -60px; top: -60px; width: 260px; height: 260px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,162,39,0.22), transparent 70%);
+}
+.public-hero__inner { max-width: 1152px; margin: 0 auto; position: relative; }
+.public-hero__eyebrow {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--color-gold); background: rgba(201,162,39,0.14); border: 1px solid rgba(201,162,39,0.35);
+  padding: 4px 10px; border-radius: 999px; margin-bottom: 14px;
+}
+.public-hero h1 { font-size: clamp(22px, 4vw, 32px); font-weight: 800; letter-spacing: -0.01em; margin: 0 0 8px; max-width: 20ch; }
+.public-hero p { font-size: 13.5px; color: rgba(255,255,255,0.82); max-width: 56ch; margin: 0 0 22px; }
+
+/* --- Status ruangan sekarang (elemen ciri khas) --- */
+.room-status-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.room-status-card {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); border-radius: var(--radius-md);
+  padding: 12px 14px; backdrop-filter: blur(2px);
+}
+.room-status-card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.room-status-card__name { font-size: 12.5px; font-weight: 700; color: #fff; line-height: 1.3; }
+.room-status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(255,255,255,0.08); }
+.room-status-dot.kosong { background: #34d399; }
+.room-status-dot.dipakai { background: #f87171; }
+.room-status-card__info { font-size: 11px; color: rgba(255,255,255,0.75); }
+.room-status-card__info.kosong { color: #86efac; }
+
+/* --- Strip pengenalan sistem (3 langkah) --- */
+.intro-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0; }
+.intro-step { display: flex; align-items: flex-start; gap: 12px; }
+.intro-step__icon {
+  width: 38px; height: 38px; border-radius: 10px; background: var(--color-primary-soft); color: var(--color-primary-dark);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.intro-step__title { font-size: 12.5px; font-weight: 700; margin-bottom: 2px; }
+.intro-step__desc { font-size: 11.5px; color: var(--color-text-muted); line-height: 1.4; }
+
+@media (max-width: 860px) {
+  .intro-steps { grid-template-columns: 1fr 1fr; }
+}
 @media (max-width: 700px) {
-  .public-header { padding: 14px 16px; }
-  .public-content { padding: 14px; }
+  .public-header { padding: 12px 16px; }
+  .public-header__subtitle { display: none; }
+  .public-clock__date { display: none; }
+  .public-content { padding: 0 14px 20px; }
+  .public-hero { margin: 0 -14px 18px; padding: 22px 14px 20px; }
+  .public-hero p { margin-bottom: 18px; }
+  .room-status-strip { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .intro-steps { grid-template-columns: 1fr; gap: 12px; margin: 18px 0; }
 }
 
 /* ===== Modal ===== */
@@ -652,6 +768,11 @@ table { border-collapse: collapse; width: 100%; }
     e('polyline', { key: 2, points: '7 10 12 15 17 10' }),
     e('line', { key: 3, x1: 12, y1: 15, x2: 12, y2: 3 }),
   ]);
+  const IconDevices = svgIcon([
+    e('rect', { key: 1, x: 2, y: 4, width: 15, height: 10, rx: 1.5 }),
+    e('line', { key: 2, x1: 2, y1: 18, x2: 17, y2: 18 }),
+    e('rect', { key: 3, x: 18, y: 9, width: 4.5, height: 8, rx: 1 }),
+  ]);
 
   /* ============================== DATA ============================== */
   const DATA_PEGAWAI_CONTOH = [
@@ -779,10 +900,11 @@ table { border-collapse: collapse; width: 100%; }
   const SHEET_PEGAWAI_URL = 'https://docs.google.com/spreadsheets/d/1HMsUp3AsqQ1nRzauoPlWBLBgGmlqzh03RGEg-32PZuk/edit?usp=sharing';
   const SHEET_PEGAWAI_ID = '1HMsUp3AsqQ1nRzauoPlWBLBgGmlqzh03RGEg-32PZuk';
   const DRIVE_KENAIKAN_PANGKAT_URL = 'https://drive.google.com/drive/folders/1D9UUYLoXFff8nIVTafn06e-mkgaWonF1?usp=sharing';
-  const PERIODE_KP_OPTIONS = ['April 2027', 'Oktober 2026', 'April 2026', 'Oktober 2025'];
+  const PERIODE_KP_OPTIONS = ['Januari 2026', 'Februari 2026', 'Maret 2026', 'April 2026', 'Oktober 2025', 'Oktober 2026', 'April 2027'];
   const STORAGE_KEY = 'simpatik_pegawai_import_v1';
   const STORAGE_KEY_PENGAJUAN_KP = 'simpatik_pengajuan_kp_v1';
   const SESSION_KEY_AUTH = 'simpatik_auth_v1';
+  const STORAGE_KEY_NOTIFIKASI = 'simpatik_notifikasi_v1';
   const SIMPEG_DOSSIER_URL = 'https://simpeg.kemenkum.go.id/siap/index.php/login';
   // Kredensial demo HANYA untuk gerbang login tampilan (front-end saja, tidak ada server).
   // Ganti dengan mekanisme login sungguhan (backend + hashing) sebelum dipakai produksi.
@@ -871,6 +993,34 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   /* ============================== HELPER PEMINJAMAN RUANG ============================== */
+  /* ============================== NOTIFIKASI ============================== */
+  function muatNotifikasi() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_NOTIFIKASI);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function simpanNotifikasi(list) {
+    localStorage.setItem(STORAGE_KEY_NOTIFIKASI, JSON.stringify(list));
+  }
+
+  function waktuRelatif(ts) {
+    const detik = Math.floor((Date.now() - ts) / 1000);
+    if (detik < 10) return 'Baru saja';
+    if (detik < 60) return `${detik} detik lalu`;
+    const menit = Math.floor(detik / 60);
+    if (menit < 60) return `${menit} menit lalu`;
+    const jam = Math.floor(menit / 60);
+    if (jam < 24) return `${jam} jam lalu`;
+    const hari = Math.floor(jam / 24);
+    if (hari < 7) return `${hari} hari lalu`;
+    return new Date(ts).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
   function muatPeminjamanRuang() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY_PEMINJAMAN_RUANG);
@@ -1326,43 +1476,78 @@ table { border-collapse: collapse; width: 100%; }
       'div',
       { className: 'login-wrap' },
       e(
-        'form',
-        { className: 'login-card', onSubmit: handleSubmit },
-        onBack &&
-          e(
-            'button',
-            { type: 'button', onClick: onBack, className: 'login-back-link' },
-            e(IconArrowDown, { size: 13, style: { transform: 'rotate(90deg)' } }),
-            'Kembali ke Jadwal Ruang (tanpa login)'
-          ),
-        e('div', { className: 'login-badge' }, 'SP'),
-        e('h1', null, 'Masuk ke SIMPATIK'),
-        e('p', { className: 'login-sub' }, 'Sistem Informasi Manajemen Pegawai Aparatur Terintegrasi — Kanwil Kemenkum Lampung'),
-        error && e('div', { className: 'login-error' }, error),
+        'div',
+        { className: 'login-brand' },
+        e('div', { className: 'login-siger-glow' }),
         e(
           'div',
-          { className: 'login-field' },
-          e('label', null, 'Username'),
-          e('div', { className: 'input-search' }, e(IconUsers, { size: 15 }), e('input', { value: username, onChange: (ev) => setUsername(ev.target.value), placeholder: 'Username admin', autoFocus: true }))
+          { className: 'login-brand__eyebrow' },
+          e('div', null, 'Kementerian Hukum Republik Indonesia'),
+          e('div', null, 'Kantor Wilayah Lampung')
         ),
         e(
           'div',
-          { className: 'login-field' },
-          e('label', null, 'Password'),
+          { className: 'login-brand__mid' },
+          e('div', { className: 'login-brand__wordmark' }, 'SIMPATIK'),
+          e('p', { className: 'login-brand__tagline' }, 'Sistem Informasi Manajemen Pegawai Aparatur Terintegrasi \u2014 satu pintu untuk data kepegawaian, kenaikan pangkat, gaji berkala, dan peminjaman ruang Kanwil.'),
+          e('div', { className: 'login-brand__rule' })
+        ),
+        e('div', { className: 'login-brand__foot' }, 'Ditandai dengan Siger \u2014 mahkota adat Lampung yang menjadi lambang provinsi, sebagaimana tampil pada Menara Siger.'),
+        e(
+          'svg',
+          { className: 'login-siger', viewBox: '0 0 400 120', preserveAspectRatio: 'none', xmlns: 'http://www.w3.org/2000/svg' },
+          e('polygon', {
+            points: '0,120 0,95 28,40 56,95 84,20 112,95 140,35 168,95 196,10 224,95 252,35 280,95 308,20 336,95 364,40 392,95 400,88 400,120',
+            fill: 'none', stroke: '#C9A227', strokeWidth: 1.4, strokeLinejoin: 'round', opacity: 0.9,
+          }),
+          e('polygon', {
+            points: '0,120 0,108 28,78 56,108 84,66 112,108 140,74 168,108 196,58 224,108 252,74 280,108 308,66 336,108 364,78 392,108 400,104 400,120',
+            fill: '#C9A227', opacity: 0.16,
+          })
+        )
+      ),
+      e(
+        'div',
+        { className: 'login-form-side' },
+        e(
+          'form',
+          { className: 'login-card', onSubmit: handleSubmit },
+          onBack &&
+            e(
+              'button',
+              { type: 'button', onClick: onBack, className: 'login-back-link' },
+              e(IconArrowDown, { size: 13, style: { transform: 'rotate(90deg)' } }),
+              'Kembali ke Jadwal Ruang (tanpa login)'
+            ),
+          e('div', { className: 'login-card__badge' }, 'SP'),
+          e('h1', null, 'Masuk ke SIMPATIK'),
+          e('p', { className: 'login-sub' }, 'Gunakan akun admin untuk mengelola data kepegawaian Kanwil.'),
+          error && e('div', { className: 'login-error' }, e(IconShield, { size: 14 }), error),
           e(
             'div',
-            { className: 'input-search' },
-            e(IconLock, { size: 15 }),
-            e('input', { type: showPw ? 'text' : 'password', value: password, onChange: (ev) => setPassword(ev.target.value), placeholder: 'Password' }),
-            e('button', { type: 'button', onClick: () => setShowPw((v) => !v), style: { background: 'none', border: 'none', color: 'var(--color-text-faint)', display: 'flex' } }, e(IconEye, { size: 15 }))
+            { className: 'login-field' },
+            e('label', null, 'Username'),
+            e('div', { className: 'input-search' }, e(IconUsers, { size: 15 }), e('input', { value: username, onChange: (ev) => setUsername(ev.target.value), placeholder: 'Username admin', autoFocus: true }))
+          ),
+          e(
+            'div',
+            { className: 'login-field' },
+            e('label', null, 'Password'),
+            e(
+              'div',
+              { className: 'input-search' },
+              e(IconLock, { size: 15 }),
+              e('input', { type: showPw ? 'text' : 'password', value: password, onChange: (ev) => setPassword(ev.target.value), placeholder: 'Password' }),
+              e('button', { type: 'button', onClick: () => setShowPw((v) => !v), style: { background: 'none', border: 'none', color: 'var(--color-text-faint)', display: 'flex' } }, e(IconEye, { size: 15 }))
+            )
+          ),
+          e('button', { type: 'submit', className: 'btn btn-primary login-submit' }, 'Masuk'),
+          e(
+            'div',
+            { className: 'login-note' },
+            e(IconShield, { size: 15, style: { flexShrink: 0, marginTop: 1 } }),
+            'Gerbang login ini berjalan di sisi browser (tanpa server) sehingga hanya cocok untuk prototipe/demo. Untuk penggunaan produksi, sambungkan ke backend otentikasi sungguhan sebelum aplikasi ini dipublikasikan.'
           )
-        ),
-        e('button', { type: 'submit', className: 'btn btn-primary', style: { width: '100%', justifyContent: 'center' } }, 'Masuk'),
-        e(
-          'div',
-          { className: 'login-note' },
-          e(IconShield, { size: 15, style: { flexShrink: 0, marginTop: 1 } }),
-          'Gerbang login ini berjalan di sisi browser (tanpa server) sehingga hanya cocok untuk prototipe/demo. Untuk penggunaan produksi, sambungkan ke backend otentikasi sungguhan sebelum aplikasi ini dipublikasikan.'
         )
       )
     );
@@ -1472,7 +1657,66 @@ table { border-collapse: collapse; width: 100%; }
     );
   }
 
-  function Topbar({ title, subtitle, onMenuClick, onLogout }) {
+  function NotificationBell({ notifikasi, onBacaSemua, onHapusSemua }) {
+    const [open, setOpen] = useState(false);
+    const wrapRef = useRef(null);
+    const belumDibaca = notifikasi.filter((n) => !n.dibaca).length;
+
+    useEffect(() => {
+      if (!open) return;
+      function onClickLuar(ev) {
+        if (wrapRef.current && !wrapRef.current.contains(ev.target)) setOpen(false);
+      }
+      document.addEventListener('mousedown', onClickLuar);
+      return () => document.removeEventListener('mousedown', onClickLuar);
+    }, [open]);
+
+    function toggle() {
+      setOpen((v) => {
+        const next = !v;
+        if (next && belumDibaca > 0) onBacaSemua();
+        return next;
+      });
+    }
+
+    return e(
+      'div',
+      { className: 'notif-wrap', ref: wrapRef },
+      e(
+        'button',
+        { className: 'topbar-icon-btn', 'aria-label': 'Notifikasi', onClick: toggle },
+        e(IconBell, { size: 16 }),
+        belumDibaca > 0 && e('span', { className: 'dot' })
+      ),
+      open &&
+        e(
+          'div',
+          { className: 'notif-panel' },
+          e(
+            'div',
+            { className: 'notif-panel__head' },
+            e('span', null, 'Notifikasi'),
+            notifikasi.length > 0 && e('button', { className: 'notif-panel__clear', onClick: onHapusSemua }, 'Hapus semua')
+          ),
+          e(
+            'div',
+            { className: 'notif-panel__list' },
+            notifikasi.length
+              ? notifikasi.map((n) =>
+                  e(
+                    'div',
+                    { key: n.id, className: `notif-item ${n.dibaca ? '' : 'unread'}` },
+                    e('div', { className: 'notif-item__dot' }),
+                    e('div', null, e('div', { className: 'notif-item__pesan' }, n.pesan), e('div', { className: 'notif-item__waktu' }, waktuRelatif(n.waktu)))
+                  )
+                )
+              : e('div', { className: 'notif-empty' }, 'Belum ada aktivitas. Perubahan data (tambah/ubah/hapus, sinkron, dsb.) akan muncul di sini.')
+          )
+        )
+    );
+  }
+
+  function Topbar({ title, subtitle, onMenuClick, onLogout, notifikasi, onBacaSemua, onHapusSemua }) {
     return e(
       'header',
       { className: 'topbar' },
@@ -1489,12 +1733,7 @@ table { border-collapse: collapse; width: 100%; }
         e(IconSearch, { size: 15 }),
         e('input', { placeholder: 'Cari pegawai, NIP, atau menu...' })
       ),
-      e(
-        'button',
-        { className: 'topbar-icon-btn', 'aria-label': 'Notifikasi' },
-        e(IconBell, { size: 16 }),
-        e('span', { className: 'dot' })
-      ),
+      e(NotificationBell, { notifikasi, onBacaSemua, onHapusSemua }),
       e(
         'div',
         { className: 'topbar-user' },
@@ -2599,6 +2838,32 @@ table { border-collapse: collapse; width: 100%; }
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
   }
 
+  // Ruangan mana yang sedang dipakai SEKARANG (jam berjalan) — inti dari halaman publik: jawab
+  // langsung "ruang mana yang kosong sekarang?" tanpa orang perlu buka kalender/tabel dulu.
+  function statusRuanganSekarang(daftar) {
+    const now = new Date();
+    const hariIni = keYMD(now);
+    const jamSekarang = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    return DAFTAR_RUANGAN.map((ruangan) => {
+      const aktif = daftar.find((b) => b.ruangan === ruangan && b.tanggal === hariIni && b.jamMulai <= jamSekarang && jamSekarang < b.jamSelesai);
+      return { ruangan, aktif };
+    });
+  }
+
+  function LiveClock() {
+    const [now, setNow] = useState(() => new Date());
+    useEffect(() => {
+      const t = setInterval(() => setNow(new Date()), 1000 * 30);
+      return () => clearInterval(t);
+    }, []);
+    return e(
+      'div',
+      { className: 'public-clock' },
+      e('div', { className: 'public-clock__time' }, now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })),
+      e('div', { className: 'public-clock__date' }, now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }))
+    );
+  }
+
   function PeminjamanRuang({ showToast, isAdmin }) {
     const [daftarLokal, setDaftarLokal] = useState(() => muatPeminjamanRuang());
     const [daftarSheet, setDaftarSheet] = useState(() => {
@@ -2644,6 +2909,7 @@ table { border-collapse: collapse; width: 100%; }
 
     const hariMinggu = useMemo(() => Array.from({ length: 7 }, (_, i) => tambahHari(awalTampil, i)), [awalTampil]);
     const ruanganTampil = filterRuangan === 'Semua' ? DAFTAR_RUANGAN : [filterRuangan];
+    const statusSekarang = useMemo(() => statusRuanganSekarang(daftar), [daftar]);
 
     function handleSave(data, original) {
       const id = original ? original.id : `pr-${Date.now()}`;
@@ -2681,12 +2947,69 @@ table { border-collapse: collapse; width: 100%; }
     return e(
       'div',
       null,
-      e(
-        'div',
-        { className: 'page-header' },
-        e('div', null, e('h1', null, 'Peminjaman Ruang'), e('p', null, 'Jadwal pemakaian ruangan Kanwil Kemenkum Lampung.')),
-        isAdmin && e('button', { className: 'btn btn-primary', onClick: () => setFormState({ initial: null }) }, e(IconPlus, { size: 15 }), 'Ajukan Peminjaman')
-      ),
+      !isAdmin &&
+        e(
+          'div',
+          { className: 'public-hero' },
+          e(
+            'div',
+            { className: 'public-hero__inner' },
+            e('span', { className: 'public-hero__eyebrow' }, e(IconDoor, { size: 12 }), 'Papan Jadwal Ruang'),
+            e('h1', null, 'Ruang mana yang kosong sekarang?'),
+            e('p', null, 'Lihat status tiap ruangan Kanwil Kemenkum Lampung secara langsung, atau cek jadwal lengkap seminggu ke depan di bawah.'),
+            e(
+              'div',
+              { className: 'room-status-strip' },
+              statusSekarang.map((s) =>
+                e(
+                  'div',
+                  { className: 'room-status-card', key: s.ruangan },
+                  e(
+                    'div',
+                    { className: 'room-status-card__top' },
+                    e('span', { className: 'room-status-card__name' }, s.ruangan),
+                    e('span', { className: `room-status-dot ${s.aktif ? 'dipakai' : 'kosong'}` })
+                  ),
+                  e(
+                    'div',
+                    { className: `room-status-card__info ${s.aktif ? '' : 'kosong'}` },
+                    s.aktif ? `Dipakai \u2014 ${s.aktif.kegiatan || s.aktif.peminjam}` : 'Kosong saat ini'
+                  )
+                )
+              )
+            )
+          )
+        ),
+      !isAdmin &&
+        e(
+          'div',
+          { className: 'intro-steps' },
+          e(
+            'div',
+            { className: 'intro-step' },
+            e('div', { className: 'intro-step__icon' }, e(IconEye, { size: 18 })),
+            e('div', null, e('div', { className: 'intro-step__title' }, 'Lihat jadwalnya'), e('div', { className: 'intro-step__desc' }, 'Cek kalender mingguan atau daftar di bawah, cari & saring per ruangan.'))
+          ),
+          e(
+            'div',
+            { className: 'intro-step' },
+            e('div', { className: 'intro-step__icon' }, e(IconLock, { size: 18 })),
+            e('div', null, e('div', { className: 'intro-step__title' }, 'Admin yang input'), e('div', { className: 'intro-step__desc' }, 'Pengajuan peminjaman ruang dikelola oleh admin lewat menu Masuk Admin.'))
+          ),
+          e(
+            'div',
+            { className: 'intro-step' },
+            e('div', { className: 'intro-step__icon' }, e(IconDevices, { size: 18 })),
+            e('div', null, e('div', { className: 'intro-step__title' }, 'Di semua perangkat'), e('div', { className: 'intro-step__desc' }, 'Tampilan menyesuaikan otomatis, dari HP hingga layar kantor.'))
+          )
+        ),
+      isAdmin &&
+        e(
+          'div',
+          { className: 'page-header' },
+          e('div', null, e('h1', null, 'Peminjaman Ruang'), e('p', null, 'Jadwal pemakaian ruangan Kanwil Kemenkum Lampung.')),
+          e('button', { className: 'btn btn-primary', onClick: () => setFormState({ initial: null }) }, e(IconPlus, { size: 15 }), 'Ajukan Peminjaman')
+        ),
       (errorSinkron || terakhirSinkron) &&
         e(
           'div',
@@ -2950,6 +3273,7 @@ table { border-collapse: collapse; width: 100%; }
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [pegawaiState, setPegawaiState] = useState(() => muatDataPegawai());
     const [toast, setToast] = useState('');
+    const [notifikasi, setNotifikasi] = useState(() => muatNotifikasi());
     const toastTimer = useRef(null);
 
     useEffect(() => {
@@ -2961,10 +3285,31 @@ table { border-collapse: collapse; width: 100%; }
       return () => window.removeEventListener('hashchange', onHashChange);
     }, []);
 
+    // showToast adalah satu-satunya jalur "sesuatu terjadi" di aplikasi ini (tambah/ubah/hapus
+    // pegawai, jadwal ruang, pengajuan, sinkron, dsb.) — jadi tiap toast otomatis juga tercatat
+    // sebagai notifikasi permanen yang bisa dibuka lewat ikon lonceng, bukan cuma sekilas lewat.
     function showToast(message) {
       setToast(message);
       clearTimeout(toastTimer.current);
       toastTimer.current = setTimeout(() => setToast(''), 2600);
+      setNotifikasi((prev) => {
+        const next = [{ id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, pesan: message, waktu: Date.now(), dibaca: false }, ...prev].slice(0, 50);
+        simpanNotifikasi(next);
+        return next;
+      });
+    }
+
+    function handleBacaSemuaNotifikasi() {
+      setNotifikasi((prev) => {
+        const next = prev.map((n) => ({ ...n, dibaca: true }));
+        simpanNotifikasi(next);
+        return next;
+      });
+    }
+
+    function handleHapusNotifikasi() {
+      setNotifikasi([]);
+      simpanNotifikasi([]);
     }
 
     function handleImport(rows) {
@@ -3020,7 +3365,12 @@ table { border-collapse: collapse; width: 100%; }
               e('div', { className: 'sidebar-brand__badge' }, 'SP'),
               e('div', null, e('div', { className: 'public-header__title' }, 'Jadwal Peminjaman Ruang'), e('div', { className: 'public-header__subtitle' }, 'Kanwil Kemenkum Lampung'))
             ),
-            e('button', { className: 'btn btn-primary', onClick: () => setShowLoginScreen(true) }, e(IconLock, { size: 15 }), 'Masuk Admin')
+            e(
+              'div',
+              { className: 'public-header__right' },
+              e(LiveClock),
+              e('button', { className: 'btn btn-primary', onClick: () => setShowLoginScreen(true) }, e(IconLock, { size: 15 }), 'Masuk Admin')
+            )
           ),
           e('div', { className: 'public-content' }, e(PeminjamanRuang, { showToast, isAdmin: false }))
         ),
@@ -3054,7 +3404,10 @@ table { border-collapse: collapse; width: 100%; }
         e(
           'div',
           { className: 'main-area' },
-          e(Topbar, { title: meta.title, subtitle: meta.subtitle, onMenuClick: () => setSidebarOpen(true), onLogout: handleLogout }),
+          e(Topbar, {
+            title: meta.title, subtitle: meta.subtitle, onMenuClick: () => setSidebarOpen(true), onLogout: handleLogout,
+            notifikasi, onBacaSemua: handleBacaSemuaNotifikasi, onHapusSemua: handleHapusNotifikasi,
+          }),
           e('div', { className: 'page-content' }, page)
         )
       ),
