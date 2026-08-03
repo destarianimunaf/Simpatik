@@ -410,13 +410,47 @@ table { border-collapse: collapse; width: 100%; }
 }
 .login-back-link:hover { color: var(--color-maroon); }
 
+/* ===== Flyer bergerak (info berputar otomatis di panel login) ===== */
+@keyframes flyerFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.login-flyer { margin-top: 24px; position: relative; z-index: 1; }
+.login-flyer__card {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: var(--radius-md);
+  padding: 14px 16px; backdrop-filter: blur(2px); min-height: 76px; animation: flyerFade .45s ease both;
+}
+.login-flyer__label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-gold); margin-bottom: 4px; }
+.login-flyer__title { font-size: 13.5px; font-weight: 700; color: #fff; margin-bottom: 3px; line-height: 1.3; }
+.login-flyer__desc { font-size: 11.5px; color: rgba(255,255,255,.75); line-height: 1.5; }
+.login-flyer__dots { display: flex; gap: 5px; margin-top: 10px; }
+.login-flyer__dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.3); border: none; padding: 0; cursor: pointer; transition: background .2s, width .2s; }
+.login-flyer__dot.active { background: var(--color-gold); width: 16px; border-radius: 3px; }
+
+/* ===== Responsif: laptop kecil / tablet lanskap ===== */
+@media (max-width: 1100px) and (min-width: 861px) {
+  .login-brand { padding: 36px 36px; }
+  .login-brand__wordmark { font-size: 36px; }
+  .login-brand__tagline { max-width: 300px; }
+}
+
+/* ===== Responsif: tablet potret & HP ===== */
 @media (max-width: 860px) {
   .login-wrap { grid-template-columns: 1fr; }
-  .login-brand { padding: 28px 24px 64px; min-height: 220px; }
+  .login-brand { padding: 28px 24px 40px; min-height: unset; }
   .login-brand__wordmark { font-size: 30px; margin: 12px 0 8px; }
-  .login-brand__tagline { font-size: 12.5px; }
+  .login-brand__tagline { font-size: 12.5px; max-width: 480px; }
   .login-brand__foot { display: none; }
+  .login-flyer { margin-top: 18px; max-width: 480px; }
   .login-form-side { padding: 28px 22px 40px; }
+}
+
+/* ===== Responsif: HP kecil ===== */
+@media (max-width: 420px) {
+  .login-brand { padding: 22px 18px 30px; }
+  .login-brand__wordmark { font-size: 26px; }
+  .login-brand__eyebrow { font-size: 10.5px; }
+  .login-flyer__card { padding: 12px 14px; min-height: 68px; }
+  .login-form-side { padding: 22px 16px 32px; }
+  .login-card__badge { margin-bottom: 16px; }
+  .login-card h1 { font-size: 19px; }
 }
 
 /* ===== Tampilan publik (sebelum login): Peminjaman Ruang ===== */
@@ -435,12 +469,18 @@ table { border-collapse: collapse; width: 100%; }
 .public-clock { text-align: right; color: #fff; line-height: 1.25; }
 .public-clock__time { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 .public-clock__date { font-size: 10.5px; color: rgba(255,255,255,0.72); text-transform: capitalize; }
-.public-content { max-width: 1200px; margin: 0 auto; padding: 0 24px 28px; }
+.public-content { max-width: 1800px; margin: 0 auto; padding: 0 40px 32px; }
+@media (min-width: 1600px) {
+  .public-content { padding: 0 64px 36px; }
+}
 
 /* --- Hero --- */
 .public-hero {
   background: linear-gradient(150deg, var(--color-maroon) 0%, var(--color-maroon-dark) 62%, #3d0c17 100%);
-  margin: 0 -24px 24px; padding: 34px 24px 26px; color: #fff; position: relative; overflow: hidden;
+  margin: 0 -40px 24px; padding: 34px 40px 26px; color: #fff; position: relative; overflow: hidden;
+}
+@media (min-width: 1600px) {
+  .public-hero { margin: 0 -64px 24px; padding: 40px 64px 30px; }
 }
 .public-hero::before {
   content: ''; position: absolute; right: -60px; top: -60px; width: 260px; height: 260px; border-radius: 50%;
@@ -455,19 +495,63 @@ table { border-collapse: collapse; width: 100%; }
 .public-hero h1 { font-size: clamp(22px, 4vw, 32px); font-weight: 800; letter-spacing: -0.01em; margin: 0 0 8px; max-width: 20ch; }
 .public-hero p { font-size: 13.5px; color: rgba(255,255,255,0.82); max-width: 56ch; margin: 0 0 22px; }
 
-/* --- Status ruangan sekarang (elemen ciri khas) --- */
+.public-hero__eyebrow { position: relative; }
+.live-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #34d399; margin-left: 2px;
+  box-shadow: 0 0 0 0 rgba(52,211,153,0.6); animation: liveDotPulse 2s ease-in-out infinite;
+}
+@keyframes liveDotPulse {
+  0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.55); }
+  70% { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
+  100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+}
+
+.hero-chip-group { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.hero-chip {
+  font-size: 11px; font-weight: 700; padding: 5px 13px; border-radius: 999px; background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.78); border: 1px solid rgba(255,255,255,0.18);
+}
+.hero-chip:hover { background: rgba(255,255,255,0.16); color: #fff; }
+.hero-chip.active { background: var(--color-gold); color: #3a2c05; border-color: var(--color-gold); }
+
+/* --- Status ruangan sekarang (elemen ciri khas, interaktif) --- */
 .room-status-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
 .room-status-card {
-  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); border-radius: var(--radius-md);
-  padding: 12px 14px; backdrop-filter: blur(2px);
+  position: relative; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); border-radius: var(--radius-md);
+  padding: 12px 14px 12px 17px; backdrop-filter: blur(2px); text-align: left; width: 100%; font-family: inherit;
+  cursor: pointer; transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  animation: roomCardIn 0.45s ease both; appearance: none; -webkit-appearance: none; color: inherit; overflow: hidden;
 }
-.room-status-card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.room-status-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+}
+.room-status-card.is-kosong::before { background: #22c55e; }
+.room-status-card.is-dipakai::before { background: #ef4444; }
+.room-status-card:hover { transform: translateY(-3px); background: rgba(255,255,255,0.13); border-color: rgba(201,162,39,0.5); }
+.room-status-card:active { transform: translateY(-1px); }
+.room-status-card:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 2px; }
+@keyframes roomCardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .room-status-card { animation: none; }
+  .live-dot { animation: none; }
+}
+.room-status-card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
 .room-status-card__name { font-size: 12.5px; font-weight: 700; color: #fff; line-height: 1.3; }
-.room-status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(255,255,255,0.08); }
-.room-status-dot.kosong { background: #34d399; }
-.room-status-dot.dipakai { background: #f87171; }
+.room-status-badge {
+  flex-shrink: 0; font-size: 10px; font-weight: 800; letter-spacing: 0.02em; padding: 3px 9px; border-radius: 999px; color: #fff;
+}
+.room-status-badge.kosong { background: #22c55e; }
+.room-status-badge.dipakai { background: #ef4444; }
 .room-status-card__info { font-size: 11px; color: rgba(255,255,255,0.75); }
 .room-status-card__info.kosong { color: #86efac; }
+.room-status-progress { height: 4px; border-radius: 999px; background: rgba(255,255,255,0.16); margin-top: 9px; overflow: hidden; }
+.room-status-progress__fill { height: 100%; border-radius: 999px; background: #ef4444; }
+.room-status-card__cta {
+  display: block; font-size: 10.5px; font-weight: 700; color: var(--color-gold); margin-top: 9px; opacity: 0;
+  transform: translateX(-4px); transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.room-status-card:hover .room-status-card__cta, .room-status-card:focus-visible .room-status-card__cta { opacity: 1; transform: translateX(0); }
+.room-status-empty { grid-column: 1 / -1; font-size: 12px; color: rgba(255,255,255,0.65); padding: 10px 2px; }
 
 /* --- Strip pengenalan sistem (3 langkah) --- */
 .intro-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0; }
@@ -548,6 +632,18 @@ table { border-collapse: collapse; width: 100%; }
   color: var(--color-danger); border: 1px solid transparent; border-radius: 999px;
   padding: 5px 9px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s;
 }
+
+.input-angka {
+  width: 56px; padding: 5px 6px; border: 1px solid var(--color-border); border-radius: 6px;
+  font-size: 12.5px; text-align: center; font-family: inherit; color: var(--color-text);
+}
+.input-angka:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; border-color: transparent; }
+
+.input-keterangan {
+  width: 140px; padding: 5px 8px; border: 1px solid var(--color-border); border-radius: 6px;
+  font-size: 12px; font-family: inherit; color: var(--color-text);
+}
+.input-keterangan:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; border-color: transparent; }
 .btn-action-red:hover { background: #FBD5D5; }
 
 /* ===== Tabel responsif ala kartu di layar sempit ===== */
@@ -933,6 +1029,7 @@ table { border-collapse: collapse; width: 100%; }
     'Siap Diusulkan': 'badge-success', 'Belum Memenuhi': 'badge-warning', 'Data Belum Lengkap': 'badge-info',
     'Jatuh Tempo': 'badge-success', Terjadwal: 'badge-info', 'Diajukan (Menunggu Verifikasi)': 'badge-warning',
     Spreadsheet: 'badge-info', Lokal: 'badge-warning',
+    Manual: 'badge-success', 'Dari NIP': 'badge-warning',
   };
 
   const ROUTE_META = {
@@ -940,7 +1037,7 @@ table { border-collapse: collapse; width: 100%; }
     '#/kepegawaian/data-pegawai': { title: 'Data Pegawai', subtitle: 'Kepegawaian / Data Pegawai' },
     '#/kepegawaian/cuti': { title: 'Cuti Pegawai', subtitle: 'Kepegawaian / Cuti' },
     '#/kepegawaian/kenaikan-pangkat': { title: 'Kenaikan Pangkat', subtitle: 'Kepegawaian / Kenaikan Pangkat' },
-    '#/kepegawaian/gaji-berkala': { title: 'Gaji Berkala', subtitle: 'Kepegawaian / Gaji Berkala' },
+    '#/kepegawaian/gaji-berkala': { title: 'Penggajian', subtitle: 'Kepegawaian / Penggajian' },
     '#/kepegawaian/inventaris-jf': { title: 'Inventaris Jabatan Fungsional', subtitle: 'Kepegawaian / Inventaris Jabatan Fungsional' },
     '#/kepegawaian/presensi': { title: 'Presensi', subtitle: 'Kepegawaian / Presensi' },
     '#/fasilitas/peminjaman-ruang': { title: 'Peminjaman Ruang', subtitle: 'Fasilitas Kantor / Peminjaman Ruang' },
@@ -1036,6 +1133,21 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   const NAMA_HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', "Jumat", 'Sabtu'];
+  const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+  // Menentukan TMT dasar perhitungan gol./gaji seorang pegawai: pakai TMT Pangkat Terakhir bila
+  // sudah diisi admin (paling akurat), jika belum ada maka jatuh ke TMT CPNS yang terbaca dari
+  // NIP (digit ke-9 s.d. 14, format YYYYMM) sebagai estimasi awal. Cth. NIP 199512312019012001
+  // -> digit 9-14 = "201901" -> TMT CPNS Januari 2019.
+  function tmtDasarPegawai(p) {
+    if (p.tmtPangkat) return { tanggal: p.tmtPangkat, sumber: 'manual' };
+    const info = parseNIP(p.nip);
+    if (info && info.tmtCPNS) {
+      const [bulan, tahun] = info.tmtCPNS.split('-');
+      if (bulan && tahun) return { tanggal: `${tahun}-${bulan}-01`, sumber: 'nip' };
+    }
+    return null;
+  }
   function namaHari(tanggal) {
     const d = new Date(tanggal);
     return isNaN(d.getTime()) ? '-' : NAMA_HARI[d.getDay()];
@@ -1180,6 +1292,29 @@ table { border-collapse: collapse; width: 100%; }
     });
   }
 
+  function normalisasiHeaderUangMakan(h) {
+    const key = h.trim().toLowerCase();
+    const map = {
+      nip: 'nip', nama: 'nama', 'nama pegawai': 'nama',
+      cuti: 'cuti', 'hari cuti': 'cuti',
+      dl: 'dl', 'dinas luar': 'dl', 'hari dl': 'dl',
+      sakit: 'sakit', 'hari sakit': 'sakit',
+      tk: 'tk', 'tanpa keterangan': 'tk', 'alpa': 'tk', 'hari tk': 'tk',
+      keterangan: 'keterangan', catatan: 'keterangan', 'tgl cuti': 'keterangan', 'tanggal cuti': 'keterangan',
+    };
+    return map[key] || key;
+  }
+
+  function normalisasiBarisUangMakan(obj) {
+    const angka = (v) => (v === '' || v === undefined ? 0 : Math.max(0, Number(v) || 0));
+    return {
+      nip: (obj.nip || '').replace(/\s+/g, ''),
+      nama: (obj.nama || '').trim(),
+      cuti: angka(obj.cuti), dl: angka(obj.dl), sakit: angka(obj.sakit), tk: angka(obj.tk),
+      keterangan: (obj.keterangan || '').trim(),
+    };
+  }
+
   function normalisasiBarisPegawai(obj) {
     return {
       nama: obj.nama || '(tanpa nama)',
@@ -1296,10 +1431,11 @@ table { border-collapse: collapse; width: 100%; }
   function kelayakanPangkat(p) {
     const jenis = jenisKepegawaian(p.jabatan);
     const syarat = jenis === 'Fungsional' ? SYARAT_TAHUN_FUNGSIONAL : SYARAT_TAHUN_REGULER;
-    if (!p.tmtPangkat) return { jenis, syarat, masaKerja: null, status: 'Data Belum Lengkap' };
-    const masaKerja = hitungTahunSelisih(p.tmtPangkat);
-    if (masaKerja === null) return { jenis, syarat, masaKerja: null, status: 'Data Belum Lengkap' };
-    return { jenis, syarat, masaKerja, status: masaKerja >= syarat ? 'Siap Diusulkan' : 'Belum Memenuhi' };
+    const dasar = tmtDasarPegawai(p);
+    if (!dasar) return { jenis, syarat, masaKerja: null, status: 'Data Belum Lengkap', sumberTMT: null };
+    const masaKerja = hitungTahunSelisih(dasar.tanggal);
+    if (masaKerja === null) return { jenis, syarat, masaKerja: null, status: 'Data Belum Lengkap', sumberTMT: null };
+    return { jenis, syarat, masaKerja, status: masaKerja >= syarat ? 'Siap Diusulkan' : 'Belum Memenuhi', sumberTMT: dasar.sumber };
   }
 
   /* ============================== GAJI POKOK & KENAIKAN GAJI BERKALA (KGB) ============================== */
@@ -1318,6 +1454,44 @@ table { border-collapse: collapse; width: 100%; }
   };
   const KGB_TAHUN = 2;
 
+  // Tarif Uang Makan PNS — PMK No. 32 Tahun 2025 tentang Standar Biaya Masukan (SBM) TA 2026.
+  // Bisa disesuaikan manual per baris di halaman Uang Makan bila ada revisi PMK berikutnya.
+  const TARIF_UANG_MAKAN = { I: 35000, II: 35000, III: 37000, IV: 41000 };
+  const STORAGE_KEY_UANG_MAKAN = 'simpatik_uang_makan_v1';
+
+  function tierGolongan(golongan) {
+    const romawi = String(golongan || '').split('/')[0].trim().toUpperCase();
+    return TARIF_UANG_MAKAN[romawi] !== undefined ? romawi : null;
+  }
+
+  function tarifUangMakan(golongan) {
+    const tier = tierGolongan(golongan);
+    return tier ? TARIF_UANG_MAKAN[tier] : 0;
+  }
+
+  function muatUangMakan() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY_UANG_MAKAN) || '{}');
+      return raw && typeof raw === 'object' ? raw : {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function simpanUangMakan(semua) {
+    localStorage.setItem(STORAGE_KEY_UANG_MAKAN, JSON.stringify(semua));
+  }
+
+  function bulanIniYYYYMM() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  function labelBulan(yyyymm) {
+    const [y, m] = yyyymm.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  }
+
   function formatRupiah(angka) {
     if (angka === null || angka === undefined || isNaN(angka)) return '-';
     return 'Rp' + Math.round(angka).toLocaleString('id-ID');
@@ -1333,24 +1507,49 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   function infoGajiBerkala(p) {
-    const masaKerja = p.tmtPangkat ? hitungTahunSelisih(p.tmtPangkat) : null;
+    const dasar = tmtDasarPegawai(p);
+    const masaKerja = dasar ? hitungTahunSelisih(dasar.tanggal) : null;
     const gajiSaatIni = masaKerja === null ? null : estimasiGajiPokok(p.golongan, masaKerja);
-    if (!p.tmtPangkat || masaKerja === null) {
-      return { masaKerja: null, gajiSaatIni: null, gajiSetelahKGB: null, tmtKGBBerikutnya: null, kgbYad: null, masaKerjaDetail: null, status: 'Data Belum Lengkap' };
+    if (!dasar || masaKerja === null) {
+      return { masaKerja: null, gajiSaatIni: null, gajiSetelahKGB: null, tmtKGBBerikutnya: null, kgbYad: null, masaKerjaDetail: null, status: 'Data Belum Lengkap', sumberTMT: null, tmtDasar: null };
     }
     const langkahKGBBerikutnya = (Math.floor(masaKerja / KGB_TAHUN) + 1) * KGB_TAHUN;
-    const tmtAwal = new Date(p.tmtPangkat);
+    const tmtAwal = new Date(dasar.tanggal);
     const tmtKGBBerikutnya = new Date(tmtAwal.getFullYear() + langkahKGBBerikutnya, tmtAwal.getMonth(), tmtAwal.getDate());
     const kgbYad = new Date(tmtKGBBerikutnya.getFullYear() + KGB_TAHUN, tmtKGBBerikutnya.getMonth(), tmtKGBBerikutnya.getDate());
     const gajiSetelahKGB = estimasiGajiPokok(p.golongan, langkahKGBBerikutnya);
-    const masaKerjaDetail = hitungTahunBulanSelisih(p.tmtPangkat, tmtKGBBerikutnya);
+    const masaKerjaDetail = hitungTahunBulanSelisih(dasar.tanggal, tmtKGBBerikutnya);
     const now = new Date();
     const jatuhTempoBulanIni = tmtKGBBerikutnya.getFullYear() === now.getFullYear() && tmtKGBBerikutnya.getMonth() === now.getMonth();
     const sudahLewat = tmtKGBBerikutnya < now;
     return {
       masaKerja, gajiSaatIni, gajiSetelahKGB, tmtKGBBerikutnya, kgbYad, masaKerjaDetail,
       status: sudahLewat ? 'Jatuh Tempo' : jatuhTempoBulanIni ? 'Jatuh Tempo' : 'Terjadwal',
+      sumberTMT: dasar.sumber, tmtDasar: dasar.tanggal,
     };
+  }
+
+  // Jadwal KGB satu tahun penuh, dikelompokkan per bulan — dipakai untuk "Jadwal Bulanan" di
+  // halaman Penggajian. Menghitung semua kelipatan KGB_TAHUN dari TMT dasar (manual atau NIP)
+  // yang jatuh pada tahun tsb, bukan hanya KGB berikutnya seperti infoGajiBerkala().
+  function jadwalKGBTahun(daftarPegawai, tahun) {
+    const bulanMap = Array.from({ length: 12 }, () => []);
+    daftarPegawai.forEach((p) => {
+      const dasar = tmtDasarPegawai(p);
+      if (!dasar) return;
+      const tmtAwal = new Date(dasar.tanggal);
+      if (isNaN(tmtAwal.getTime())) return;
+      for (let k = 1; k <= 30; k++) {
+        const langkah = k * KGB_TAHUN;
+        const tgl = new Date(tmtAwal.getFullYear() + langkah, tmtAwal.getMonth(), tmtAwal.getDate());
+        if (tgl.getFullYear() > tahun) break;
+        if (tgl.getFullYear() === tahun) {
+          bulanMap[tgl.getMonth()].push({ p, tanggal: tgl, gajiLama: estimasiGajiPokok(p.golongan, langkah - KGB_TAHUN), gajiBaru: estimasiGajiPokok(p.golongan, langkah), sumberTMT: dasar.sumber });
+        }
+      }
+    });
+    bulanMap.forEach((list) => list.sort((a, b) => a.tanggal - b.tanggal || a.p.nama.localeCompare(b.p.nama)));
+    return bulanMap;
   }
 
   /* ============================== KOMPONEN KECIL ============================== */
@@ -1455,6 +1654,41 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   /* ============================== LOGIN ============================== */
+  function LoginFlyer() {
+    const slides = [
+      { label: 'Layanan Ruang', title: 'Cek jadwal ruang tanpa login', desc: 'Lihat ketersediaan ruang rapat & aula secara langsung di halaman utama.' },
+      { label: 'Kenaikan Pangkat', title: 'Usul dibuka tiap tanggal 1', desc: '12 periode setahun sesuai Peraturan BKN No. 4 Tahun 2025.' },
+      { label: 'Gaji Berkala', title: 'Estimasi otomatis dari NIP', desc: 'Dihitung dari TMT Pangkat Terakhir, atau TMT CPNS pada NIP bila belum diisi.' },
+      { label: 'Jam Layanan', title: 'Senin\u2013Jumat, 08.00\u201316.00 WIB', desc: 'Sub Bagian Kepegawaian, Kanwil Kementerian Hukum Lampung.' },
+    ];
+    const [idx, setIdx] = useState(0);
+    const [hover, setHover] = useState(false);
+
+    useEffect(() => {
+      if (hover) return;
+      const timer = setInterval(() => setIdx((i) => (i + 1) % slides.length), 4200);
+      return () => clearInterval(timer);
+    }, [hover]);
+
+    const s = slides[idx];
+    return e(
+      'div',
+      { className: 'login-flyer', onMouseEnter: () => setHover(true), onMouseLeave: () => setHover(false) },
+      e(
+        'div',
+        { className: 'login-flyer__card', key: idx },
+        e('div', { className: 'login-flyer__label' }, s.label),
+        e('div', { className: 'login-flyer__title' }, s.title),
+        e('div', { className: 'login-flyer__desc' }, s.desc)
+      ),
+      e(
+        'div',
+        { className: 'login-flyer__dots' },
+        slides.map((_, i) => e('button', { key: i, type: 'button', 'aria-label': `Info ${i + 1}`, className: `login-flyer__dot ${i === idx ? 'active' : ''}`, onClick: () => setIdx(i) }))
+      )
+    );
+  }
+
   function Login({ onSuccess, onBack }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -1490,7 +1724,8 @@ table { border-collapse: collapse; width: 100%; }
           { className: 'login-brand__mid' },
           e('div', { className: 'login-brand__wordmark' }, 'SIMPATIK'),
           e('p', { className: 'login-brand__tagline' }, 'Sistem Informasi Manajemen Pegawai Aparatur Terintegrasi \u2014 satu pintu untuk data kepegawaian, kenaikan pangkat, gaji berkala, dan peminjaman ruang Kanwil.'),
-          e('div', { className: 'login-brand__rule' })
+          e('div', { className: 'login-brand__rule' }),
+          e(LoginFlyer, null)
         ),
         e('div', { className: 'login-brand__foot' }, 'Ditandai dengan Siger \u2014 mahkota adat Lampung yang menjadi lambang provinsi, sebagaimana tampil pada Menara Siger.'),
         e(
@@ -1582,7 +1817,7 @@ table { border-collapse: collapse; width: 100%; }
     { hash: '#/kepegawaian/data-pegawai', label: 'Data Pegawai', icon: IconUsers },
     { hash: '#/kepegawaian/cuti', label: 'Cuti Pegawai', icon: IconCalendar },
     { hash: '#/kepegawaian/kenaikan-pangkat', label: 'Kenaikan Pangkat', icon: IconTrending },
-    { hash: '#/kepegawaian/gaji-berkala', label: 'Gaji Berkala', icon: IconWallet },
+    { hash: '#/kepegawaian/gaji-berkala', label: 'Penggajian', icon: IconWallet },
     { hash: '#/kepegawaian/inventaris-jf', label: 'Inventaris Jab. Fungsional', icon: IconFolder },
     { hash: '#/kepegawaian/presensi', label: 'Presensi', icon: IconFingerprint },
   ];
@@ -2332,8 +2567,8 @@ table { border-collapse: collapse; width: 100%; }
         { className: 'import-note' },
         `Syarat masa kerja: reguler ${SYARAT_TAHUN_REGULER} tahun, fungsional ${SYARAT_TAHUN_FUNGSIONAL} tahun. Periode usul terdekat: `,
         e('strong', null, periodeUsulTerdekat()),
-        '.',
-        belumLengkap > 0 && e('span', null, ` ${belumLengkap} pegawai belum punya TMT Pangkat.`)
+        '. TMT dasar memakai TMT Pangkat Terakhir bila sudah diisi, atau estimasi TMT CPNS dari NIP bila belum.',
+        belumLengkap > 0 && e('span', null, ` ${belumLengkap} pegawai NIP-nya tidak standar sehingga belum bisa dihitung.`)
       ),
       e(
         'div',
@@ -2360,26 +2595,32 @@ table { border-collapse: collapse; width: 100%; }
             e(
               'thead',
               null,
-              e('tr', null, e('th', null, 'No'), e('th', null, 'Nama'), e('th', null, 'Golongan'), e('th', null, 'Jenis'), e('th', null, 'TMT Pangkat'), e('th', null, 'Masa Kerja'), e('th', null, 'Syarat'), e('th', null, 'Status'))
+              e('tr', null, e('th', null, 'No'), e('th', null, 'Nama'), e('th', null, 'Golongan'), e('th', null, 'Jenis'), e('th', null, 'TMT Dasar'), e('th', null, 'Masa Kerja'), e('th', null, 'Syarat'), e('th', null, 'Status'))
             ),
             e(
               'tbody',
               null,
               tampil.length
-                ? tampil.map(({ p, k }, i) =>
-                    e(
+                ? tampil.map(({ p, k }, i) => {
+                    const dasarP = tmtDasarPegawai(p);
+                    return e(
                       'tr',
                       { key: i },
                       e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
                       e('td', { 'data-label': 'Nama', style: { fontWeight: 600 } }, p.nama),
                       e('td', { 'data-label': 'Golongan' }, p.golongan),
                       e('td', { 'data-label': 'Jenis' }, k.jenis),
-                      e('td', { 'data-label': 'TMT Pangkat' }, p.tmtPangkat || '-'),
+                      e(
+                        'td',
+                        { 'data-label': 'TMT Dasar' },
+                        dasarP ? dasarP.tanggal : '-',
+                        dasarP && dasarP.sumber === 'nip' && e('div', { style: { fontSize: 10.5, color: 'var(--color-text-faint)' } }, 'dari NIP')
+                      ),
                       e('td', { 'data-label': 'Masa Kerja' }, k.masaKerja === null ? '-' : `${k.masaKerja} tahun`),
                       e('td', { 'data-label': 'Syarat' }, `${k.syarat} tahun`),
                       e('td', { 'data-label': 'Status' }, e(Badge, { status: k.status }))
-                    )
-                  )
+                    );
+                  })
                 : e('tr', null, e('td', { colSpan: 8, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Belum ada pegawai yang memenuhi syarat pada data saat ini.'))
             )
           )
@@ -2488,16 +2729,22 @@ table { border-collapse: collapse; width: 100%; }
 
   /* ============================== GAJI BERKALA ============================== */
   function GajiBerkala({ pegawai }) {
+    const [tab, setTab] = useState('kgb');
     const [query, setQuery] = useState('');
     const [hanyaJatuhTempo, setHanyaJatuhTempo] = useState(false);
     const [cetakUntuk, setCetakUntuk] = useState(null);
+    const tahunBerjalan = new Date().getFullYear();
 
     const baris = useMemo(() => pegawai.map((p) => ({ p, g: infoGajiBerkala(p) })), [pegawai]);
     const jatuhTempo = baris.filter((b) => b.g.status === 'Jatuh Tempo');
     const belumLengkap = baris.filter((b) => b.g.status === 'Data Belum Lengkap').length;
+    const dariNIP = baris.filter((b) => b.g.sumberTMT === 'nip').length;
 
     const dasar = hanyaJatuhTempo ? jatuhTempo : baris;
     const tampil = dasar.filter((b) => !query || (b.p.nama || '').toLowerCase().includes(query.toLowerCase()));
+
+    const jadwalBulanan = useMemo(() => jadwalKGBTahun(pegawai, tahunBerjalan), [pegawai, tahunBerjalan]);
+    const totalJadwalTahunIni = jadwalBulanan.reduce((sum, arr) => sum + arr.length, 0);
 
     useEffect(() => {
       if (cetakUntuk) {
@@ -2512,28 +2759,297 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'page-header' },
-        e('div', null, e('h1', null, 'Gaji Berkala'), e('p', null, 'Estimasi gaji pokok & jadwal Kenaikan Gaji Berkala (KGB) tiap 2 tahun per pegawai.'))
+        e('div', null, e('h1', null, 'Penggajian'), e('p', null, 'Estimasi gaji pokok, jadwal Kenaikan Gaji Berkala, dan perhitungan uang makan pegawai.'))
       ),
+      e(
+        'div',
+        { className: 'tab-bar' },
+        e('button', { className: `tab-btn ${tab === 'kgb' ? 'active' : ''}`, onClick: () => setTab('kgb') }, 'Gaji Pokok & KGB'),
+        e('button', { className: `tab-btn ${tab === 'jadwal' ? 'active' : ''}`, onClick: () => setTab('jadwal') }, `Jadwal Bulanan ${tahunBerjalan}`),
+        e('button', { className: `tab-btn ${tab === 'uangmakan' ? 'active' : ''}`, onClick: () => setTab('uangmakan') }, 'Uang Makan')
+      ),
+      tab === 'uangmakan' && e(UangMakan, { pegawai }),
+      tab === 'jadwal' && e(JadwalKGBBulanan, { jadwalBulanan, tahun: tahunBerjalan, total: totalJadwalTahunIni }),
+      tab === 'kgb' &&
+        e(
+          'div',
+          null,
+          e(
+            'div',
+            { className: 'import-note' },
+            `Berdasar PP 5/2024. KGB otomatis tiap ${KGB_TAHUN} tahun. `,
+            e('strong', null, 'Estimasi'),
+            ' (interpolasi MKG 0\u201332) \u2014 verifikasi di GPP/SIMPEG sebelum terbit SK. TMT dasar memakai ',
+            e('strong', null, 'TMT Pangkat Terakhir'),
+            ' bila sudah diisi; bila belum, otomatis memakai ',
+            e('strong', null, 'TMT CPNS dari NIP'),
+            ' (digit ke-9\u201314) sebagai estimasi awal.',
+            belumLengkap > 0 && e('span', null, ` ${belumLengkap} pegawai NIP-nya tidak standar (bukan 18 digit) sehingga belum bisa dihitung sama sekali.`),
+            dariNIP > 0 && e('span', null, ` ${dariNIP} pegawai memakai estimasi dari NIP (belum ada TMT Pangkat Terakhir manual).`)
+          ),
+          e(
+            'div',
+            { className: 'stat-grid', style: { gridTemplateColumns: 'repeat(3, 1fr)' } },
+            e(StatCard, { icon: IconWallet, label: 'Jatuh Tempo Bulan Ini/Lewat', value: String(jatuhTempo.length), tone: 'success' }),
+            e(StatCard, { icon: IconClock, label: 'Terjadwal (Belum Jatuh Tempo)', value: String(baris.filter((b) => b.g.status === 'Terjadwal').length), tone: 'info' }),
+            e(StatCard, { icon: IconUsers, label: 'Data Belum Lengkap', value: String(belumLengkap), tone: 'warning' })
+          ),
+          e(
+            'div',
+            { className: 'filter-bar' },
+            e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama pegawai...', value: query, onChange: (ev) => setQuery(ev.target.value) })),
+            e('button', { className: 'btn btn-outline', onClick: () => setHanyaJatuhTempo((v) => !v) }, hanyaJatuhTempo ? 'Tampilkan Semua Pegawai' : 'Tampilkan yang Jatuh Tempo Saja')
+          ),
+          e(
+            'div',
+            { className: 'card' },
+            e(
+              'div',
+              { className: 'table-wrap' },
+              e(
+                'table',
+                { className: 'data-table' },
+                e(
+                  'thead',
+                  null,
+                  e(
+                    'tr',
+                    null,
+                    e('th', null, 'No'), e('th', null, 'Nama'), e('th', null, 'Golongan'), e('th', null, 'Masa Kerja Gol.'),
+                    e('th', null, 'Gaji Pokok Saat Ini'), e('th', null, 'TMT KGB Berikutnya'), e('th', null, 'Gaji Pokok Setelah KGB'), e('th', null, 'Status'), e('th', null, '')
+                  )
+                ),
+                e(
+                  'tbody',
+                  null,
+                  tampil.length
+                    ? tampil.map(({ p, g }, i) =>
+                        e(
+                          'tr',
+                          { key: i },
+                          e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
+                          e('td', { 'data-label': 'Nama', style: { fontWeight: 600 } }, p.nama),
+                          e('td', { 'data-label': 'Golongan' }, p.golongan),
+                          e('td', { 'data-label': 'Masa Kerja Gol.' }, g.masaKerja === null ? '-' : `${g.masaKerja} tahun`, g.sumberTMT === 'nip' && e('div', { style: { fontSize: 10.5, color: 'var(--color-text-faint)' } }, 'dari NIP')),
+                          e('td', { 'data-label': 'Gaji Pokok Saat Ini' }, formatRupiah(g.gajiSaatIni)),
+                          e('td', { 'data-label': 'TMT KGB Berikutnya' }, g.tmtKGBBerikutnya ? g.tmtKGBBerikutnya.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'),
+                          e('td', { 'data-label': 'Gaji Pokok Setelah KGB' }, formatRupiah(g.gajiSetelahKGB)),
+                          e('td', { 'data-label': 'Status' }, e(Badge, { status: g.status })),
+                          e(
+                            'td',
+                            { 'data-label': '' },
+                            g.status !== 'Data Belum Lengkap' &&
+                              e('button', { className: 'btn-action-green', onClick: () => setCetakUntuk({ p, g }), title: 'Cetak SK KGB' }, e(IconPrint, { size: 13 }), 'Cetak SK')
+                          )
+                        )
+                      )
+                    : e('tr', null, e('td', { colSpan: 9, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada data yang cocok.'))
+                )
+              )
+            )
+          )
+        ),
+      cetakUntuk &&
+        e(SkGajiBerkalaForm, { pegawai: cetakUntuk.p, info: cetakUntuk.g, onClose: () => setCetakUntuk(null) })
+    );
+  }
+
+  /* ============================== JADWAL KGB BULANAN (TAHUN BERJALAN) ============================== */
+  function JadwalKGBBulanan({ jadwalBulanan, tahun, total }) {
+    const bulanSekarang = new Date().getMonth();
+    return e(
+      'div',
+      null,
       e(
         'div',
         { className: 'import-note' },
-        `Berdasar PP 5/2024. KGB otomatis tiap ${KGB_TAHUN} tahun. `,
-        e('strong', null, 'Estimasi'),
-        ' (interpolasi MKG 0\u201332) \u2014 verifikasi di GPP/SIMPEG sebelum terbit SK.',
-        belumLengkap > 0 && e('span', null, ` ${belumLengkap} pegawai belum punya TMT Pangkat.`)
+        `Rekap pegawai yang jatuh tempo Kenaikan Gaji Berkala per bulan sepanjang tahun ${tahun}, dihitung dari TMT Pangkat Terakhir (atau estimasi TMT CPNS dari NIP bila belum diisi). Total `,
+        e('strong', null, `${total} kejadian KGB`),
+        ` pada tahun ini.`
+      ),
+      NAMA_BULAN.map((namaBulan, idx) => {
+        const daftar = jadwalBulanan[idx];
+        const isBulanIni = idx === bulanSekarang;
+        return e(
+          'div',
+          { key: namaBulan, className: 'card', style: { marginBottom: 14, borderColor: isBulanIni ? 'var(--color-primary)' : undefined } },
+          e(
+            'div',
+            { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', borderBottom: daftar.length ? '1px solid var(--color-border)' : 'none' } },
+            e(
+              'div',
+              { style: { display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 13.5 } },
+              namaBulan, ' ', tahun,
+              isBulanIni && e(Badge, { status: 'Jatuh Tempo' })
+            ),
+            e('span', { style: { fontSize: 12, color: 'var(--color-text-faint)' } }, `${daftar.length} pegawai`)
+          ),
+          daftar.length > 0 &&
+            e(
+              'div',
+              { className: 'table-wrap' },
+              e(
+                'table',
+                { className: 'data-table' },
+                e('thead', null, e('tr', null, e('th', null, 'No'), e('th', null, 'Nama'), e('th', null, 'Golongan'), e('th', null, 'Tanggal KGB'), e('th', null, 'Gaji Lama'), e('th', null, 'Gaji Baru'), e('th', null, 'Sumber TMT'))),
+                e(
+                  'tbody',
+                  null,
+                  daftar.map((row, i) =>
+                    e(
+                      'tr',
+                      { key: i },
+                      e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
+                      e('td', { 'data-label': 'Nama', style: { fontWeight: 600 } }, row.p.nama),
+                      e('td', { 'data-label': 'Golongan' }, row.p.golongan),
+                      e('td', { 'data-label': 'Tanggal KGB' }, row.tanggal.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })),
+                      e('td', { 'data-label': 'Gaji Lama' }, formatRupiah(row.gajiLama)),
+                      e('td', { 'data-label': 'Gaji Baru' }, formatRupiah(row.gajiBaru)),
+                      e('td', { 'data-label': 'Sumber TMT' }, e(Badge, { status: row.sumberTMT === 'nip' ? 'Dari NIP' : 'Manual' }))
+                    )
+                  )
+                )
+              )
+            )
+        );
+      })
+    );
+  }
+
+  /* ============================== UANG MAKAN (SUB PENGGAJIAN) ============================== */
+  function UangMakan({ pegawai }) {
+    const [periode, setPeriode] = useState(bulanIniYYYYMM());
+    const [semua, setSemua] = useState(() => muatUangMakan());
+    const [query, setQuery] = useState('');
+    const fileInputRef = useRef(null);
+
+    const dataPeriode = semua[periode] || {};
+    // Kompatibel dengan data lama (totalHariKerja sempat tersimpan per-baris) sebagai nilai awal.
+    const nilaiLamaPertama = Object.values(dataPeriode.entries || dataPeriode)[0];
+    const totalHariKerja = dataPeriode.totalHariKerja ?? nilaiLamaPertama?.totalHariKerja ?? 22;
+    const entries = dataPeriode.entries || {};
+
+    function ubahTotalHariKerja(value) {
+      const angka = value === '' ? '' : Math.max(0, Number(value) || 0);
+      const next = { ...semua, [periode]: { ...dataPeriode, totalHariKerja: angka, entries } };
+      setSemua(next);
+      simpanUangMakan(next);
+    }
+
+    function ubahBaris(nip, field, value) {
+      const angka = field === 'keterangan' ? value : value === '' ? '' : Math.max(0, Number(value) || 0);
+      const existing = entries[nip] || { cuti: 0, dl: 0, sakit: 0, tk: 0, keterangan: '' };
+      const next = { ...semua, [periode]: { ...dataPeriode, totalHariKerja, entries: { ...entries, [nip]: { ...existing, [field]: angka } } } };
+      setSemua(next);
+      simpanUangMakan(next);
+    }
+
+    async function handleImporCSV(ev) {
+      const file = ev.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const baris = parseCSV(text, normalisasiHeaderUangMakan).map(normalisasiBarisUangMakan);
+        if (!baris.length) { showToastLokal('File tidak berisi data yang bisa dibaca.'); return; }
+
+        // Cocokkan tiap baris CSV ke pegawai lewat NIP (utama) atau nama (cadangan bila NIP kosong/beda).
+        const petaNip = {}; const petaNama = {};
+        pegawai.forEach((p) => { petaNip[p.nip.replace(/\s+/g, '')] = p; petaNama[p.nama.toLowerCase()] = p; });
+
+        let cocok = 0; let takCocok = 0;
+        const entriesBaru = { ...entries };
+        baris.forEach((b) => {
+          const p = petaNip[b.nip] || petaNama[b.nama.toLowerCase()];
+          if (!p) { takCocok++; return; }
+          cocok++;
+          entriesBaru[p.nip] = { cuti: b.cuti, dl: b.dl, sakit: b.sakit, tk: b.tk, keterangan: b.keterangan };
+        });
+
+        const next = { ...semua, [periode]: { ...dataPeriode, totalHariKerja, entries: entriesBaru } };
+        setSemua(next);
+        simpanUangMakan(next);
+        showToastLokal(`Impor selesai: ${cocok} pegawai terisi otomatis${takCocok ? `, ${takCocok} baris tidak cocok dengan NIP/nama manapun` : ''}.`);
+      } catch (err) {
+        showToastLokal('Gagal membaca file. Pastikan formatnya CSV.');
+      } finally {
+        ev.target.value = '';
+      }
+    }
+
+    // Toast sendiri di sini karena UangMakan belum menerima prop showToast dari GajiBerkala.
+    const [pesanToast, setPesanToast] = useState('');
+    function showToastLokal(pesan) {
+      setPesanToast(pesan);
+      setTimeout(() => setPesanToast(''), 3200);
+    }
+
+    const baris = useMemo(() => {
+      const totalKerja = Number(totalHariKerja) || 0;
+      return pegawai
+        .filter((p) => !query || p.nama.toLowerCase().includes(query.toLowerCase()))
+        .map((p) => {
+          const d = entries[p.nip] || { cuti: 0, dl: 0, sakit: 0, tk: 0, keterangan: '' };
+          const potongan = (Number(d.cuti) || 0) + (Number(d.dl) || 0) + (Number(d.sakit) || 0) + (Number(d.tk) || 0);
+          const hariHadir = Math.max(0, totalKerja - potongan);
+          const tarif = tarifUangMakan(p.golongan);
+          const total = hariHadir * tarif;
+          return { p, d, hariHadir, tarif, total };
+        });
+    }, [pegawai, entries, totalHariKerja, query]);
+
+    const totalKeseluruhan = baris.reduce((acc, b) => acc + b.total, 0);
+
+    return e(
+      'div',
+      null,
+      e(
+        'div',
+        { className: 'import-note' },
+        `Tarif per PMK 32/2025 (SBM 2026): Gol. I & II ${formatRupiah(35000)}, III ${formatRupiah(37000)}, IV ${formatRupiah(41000)} per hari hadir. `,
+        'Hari Hadir = Total Hari Kerja (satu nilai untuk semua pegawai) \u2212 (Cuti + DL + Sakit + TK) per orang. Isi kolom Keterangan untuk catat tanggal cuti/sakit/dll.'
       ),
       e(
         'div',
-        { className: 'stat-grid', style: { gridTemplateColumns: 'repeat(3, 1fr)' } },
-        e(StatCard, { icon: IconWallet, label: 'Jatuh Tempo Bulan Ini/Lewat', value: String(jatuhTempo.length), tone: 'success' }),
-        e(StatCard, { icon: IconClock, label: 'Terjadwal (Belum Jatuh Tempo)', value: String(baris.filter((b) => b.g.status === 'Terjadwal').length), tone: 'info' }),
-        e(StatCard, { icon: IconUsers, label: 'Data Belum Lengkap', value: String(belumLengkap), tone: 'warning' })
+        { className: 'import-box' },
+        e('div', { className: 'import-box__icon' }, e(IconUpload, { size: 19 })),
+        e(
+          'div',
+          { className: 'import-box__text' },
+          e('div', { className: 'import-box__title' }, 'Impor data cuti/DL/sakit/TK dari CSV/Excel'),
+          e('div', { className: 'import-box__desc' }, `Kolom: nip (atau nama), cuti, dl, sakit, tk, keterangan. Baris yang cocok NIP/nama akan mengisi periode ${labelBulan(periode)} otomatis \u2014 baris lain tetap bisa diisi manual.`)
+        ),
+        e(
+          'label',
+          { className: 'btn btn-primary', style: { margin: 0 } },
+          e(IconUpload, { size: 15 }),
+          'Pilih File',
+          e('input', { type: 'file', accept: '.csv,text/csv', style: { display: 'none' }, ref: fileInputRef, onChange: handleImporCSV })
+        )
       ),
       e(
         'div',
         { className: 'filter-bar' },
-        e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama pegawai...', value: query, onChange: (ev) => setQuery(ev.target.value) })),
-        e('button', { className: 'btn btn-outline', onClick: () => setHanyaJatuhTempo((v) => !v) }, hanyaJatuhTempo ? 'Tampilkan Semua Pegawai' : 'Tampilkan yang Jatuh Tempo Saja')
+        e(
+          'div',
+          null,
+          e('label', { style: { ...fieldStyle(), display: 'block', marginBottom: 4 } }, 'Periode'),
+          e('input', { type: 'month', className: 'select-filter', value: periode, onChange: (ev) => setPeriode(ev.target.value) })
+        ),
+        e(
+          'div',
+          null,
+          e('label', { style: { ...fieldStyle(), display: 'block', marginBottom: 4 } }, 'Total Hari Kerja (semua pegawai)'),
+          e('input', { type: 'number', min: 0, className: 'input-angka', style: { width: 72 }, value: totalHariKerja, onChange: (ev) => ubahTotalHariKerja(ev.target.value) })
+        ),
+        e('div', { className: 'input-search', style: { marginTop: 18 } }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari nama pegawai...', value: query, onChange: (ev) => setQuery(ev.target.value) })),
+        e('button', { className: 'btn btn-action-green', style: { marginTop: 18 }, onClick: () => window.print() }, e(IconPrint, { size: 15 }), 'Cetak PDF Rekap')
+      ),
+      e(
+        'div',
+        { className: 'stat-grid', style: { gridTemplateColumns: 'repeat(3, 1fr)' } },
+        e(StatCard, { icon: IconUsers, label: 'Jumlah Pegawai', value: String(baris.length), tone: 'info' }),
+        e(StatCard, { icon: IconWallet, label: `Total Uang Makan ${labelBulan(periode)}`, value: formatRupiah(totalKeseluruhan), tone: 'success' }),
+        e(StatCard, { icon: IconClock, label: 'Rata-rata Hari Hadir', value: baris.length ? `${(baris.reduce((a, b) => a + b.hariHadir, 0) / baris.length).toFixed(1)} hari` : '-', tone: 'warning' })
       ),
       e(
         'div',
@@ -2550,41 +3066,122 @@ table { border-collapse: collapse; width: 100%; }
               e(
                 'tr',
                 null,
-                e('th', null, 'No'), e('th', null, 'Nama'), e('th', null, 'Golongan'), e('th', null, 'Masa Kerja Gol.'),
-                e('th', null, 'Gaji Pokok Saat Ini'), e('th', null, 'TMT KGB Berikutnya'), e('th', null, 'Gaji Pokok Setelah KGB'), e('th', null, 'Status'), e('th', null, '')
+                e('th', null, 'No'), e('th', null, 'Nama'), e('th', null, 'Gol.'), e('th', null, 'Cuti'), e('th', null, 'DL'), e('th', null, 'Sakit'),
+                e('th', null, 'TK'), e('th', null, 'Keterangan (tgl. cuti dll.)'), e('th', null, 'Hari Hadir'), e('th', null, 'Tarif/Hari'), e('th', null, 'Total Uang Makan')
               )
             ),
             e(
               'tbody',
               null,
-              tampil.length
-                ? tampil.map(({ p, g }, i) =>
+              baris.length
+                ? baris.map(({ p, d, hariHadir, tarif, total }, i) =>
                     e(
                       'tr',
-                      { key: i },
+                      { key: p.nip },
                       e('td', { 'data-label': 'No', style: { color: 'var(--color-text-faint)' } }, i + 1),
                       e('td', { 'data-label': 'Nama', style: { fontWeight: 600 } }, p.nama),
-                      e('td', { 'data-label': 'Golongan' }, p.golongan),
-                      e('td', { 'data-label': 'Masa Kerja Gol.' }, g.masaKerja === null ? '-' : `${g.masaKerja} tahun`),
-                      e('td', { 'data-label': 'Gaji Pokok Saat Ini' }, formatRupiah(g.gajiSaatIni)),
-                      e('td', { 'data-label': 'TMT KGB Berikutnya' }, g.tmtKGBBerikutnya ? g.tmtKGBBerikutnya.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'),
-                      e('td', { 'data-label': 'Gaji Pokok Setelah KGB' }, formatRupiah(g.gajiSetelahKGB)),
-                      e('td', { 'data-label': 'Status' }, e(Badge, { status: g.status })),
-                      e(
-                        'td',
-                        { 'data-label': '' },
-                        g.status !== 'Data Belum Lengkap' &&
-                          e('button', { className: 'btn-action-green', onClick: () => setCetakUntuk({ p, g }), title: 'Cetak SK KGB' }, e(IconPrint, { size: 13 }), 'Cetak SK')
-                      )
+                      e('td', { 'data-label': 'Gol.' }, p.golongan),
+                      e('td', { 'data-label': 'Cuti' }, e('input', { type: 'number', min: 0, className: 'input-angka', value: d.cuti, onChange: (ev) => ubahBaris(p.nip, 'cuti', ev.target.value) })),
+                      e('td', { 'data-label': 'DL' }, e('input', { type: 'number', min: 0, className: 'input-angka', value: d.dl, onChange: (ev) => ubahBaris(p.nip, 'dl', ev.target.value) })),
+                      e('td', { 'data-label': 'Sakit' }, e('input', { type: 'number', min: 0, className: 'input-angka', value: d.sakit, onChange: (ev) => ubahBaris(p.nip, 'sakit', ev.target.value) })),
+                      e('td', { 'data-label': 'TK' }, e('input', { type: 'number', min: 0, className: 'input-angka', value: d.tk, onChange: (ev) => ubahBaris(p.nip, 'tk', ev.target.value) })),
+                      e('td', { 'data-label': 'Keterangan' }, e('input', { type: 'text', className: 'input-keterangan', placeholder: 'mis. cuti 3\u20135 Jan', value: d.keterangan || '', onChange: (ev) => ubahBaris(p.nip, 'keterangan', ev.target.value) })),
+                      e('td', { 'data-label': 'Hari Hadir', style: { fontWeight: 700 } }, hariHadir),
+                      e('td', { 'data-label': 'Tarif/Hari' }, formatRupiah(tarif)),
+                      e('td', { 'data-label': 'Total Uang Makan', style: { fontWeight: 700, color: 'var(--color-success)' } }, formatRupiah(total))
                     )
                   )
-                : e('tr', null, e('td', { colSpan: 9, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada data yang cocok.'))
+                : e('tr', null, e('td', { colSpan: 11, style: { textAlign: 'center', padding: 32, color: 'var(--color-text-faint)' } }, 'Tidak ada pegawai yang cocok.'))
             )
           )
         )
       ),
-      cetakUntuk &&
-        e(SkGajiBerkalaForm, { pegawai: cetakUntuk.p, info: cetakUntuk.g, onClose: () => setCetakUntuk(null) })
+      e(UangMakanPrintable, { periode, totalHariKerja, baris, total: totalKeseluruhan })
+    );
+  }
+
+  function UangMakanPrintable({ periode, totalHariKerja, baris, total }) {
+    return e(
+      'div',
+      { className: 'printable-sk' },
+      e(
+        'div',
+        { style: { display: 'flex', alignItems: 'center', gap: 14, borderBottom: '3px solid #000', paddingBottom: 8, marginBottom: 14 } },
+        e('div', { style: { width: 60, height: 60, border: '1px solid #999', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, textAlign: 'center' } }, 'LOGO'),
+        e(
+          'div',
+          { style: { textAlign: 'center', flex: 1 } },
+          e('div', { style: { fontWeight: 700, fontSize: 14 } }, 'KEMENTERIAN HUKUM REPUBLIK INDONESIA'),
+          e('div', { style: { fontWeight: 700, fontSize: 13 } }, 'KANTOR WILAYAH LAMPUNG'),
+          e('div', { style: { fontSize: 10.5 } }, 'Jl. RW. Monginsidi No. 184, Bandar Lampung')
+        )
+      ),
+      e('h3', { style: { textAlign: 'center', fontSize: 13, textDecoration: 'underline', margin: '0 0 4px' } }, 'REKAPITULASI PERHITUNGAN UANG MAKAN PEGAWAI'),
+      e('p', { style: { textAlign: 'center', fontSize: 12, margin: '0 0 16px' } }, `Periode: ${labelBulan(periode)} \u2014 Total Hari Kerja: ${totalHariKerja || 0} hari`),
+      e(
+        'table',
+        { style: { width: '100%', fontSize: 10.5, borderCollapse: 'collapse' } },
+        e(
+          'thead',
+          null,
+          e(
+            'tr',
+            null,
+            ['No', 'Nama', 'NIP', 'Gol.', 'Cuti', 'DL', 'Sakit', 'TK', 'Keterangan', 'Hadir', 'Tarif/Hari', 'Uang Makan'].map((h) =>
+              e('th', { key: h, style: { border: '1px solid #000', padding: '4px 6px', background: '#eee' } }, h)
+            )
+          )
+        ),
+        e(
+          'tbody',
+          null,
+          baris.map(({ p, d, hariHadir, tarif, total: t }, i) =>
+            e(
+              'tr',
+              { key: p.nip },
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', textAlign: 'center' } }, i + 1),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px' } }, p.nama),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px' } }, p.nip),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', textAlign: 'center' } }, p.golongan),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', textAlign: 'center' } }, d.cuti || 0),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', textAlign: 'center' } }, d.dl || 0),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', textAlign: 'center' } }, d.sakit || 0),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', textAlign: 'center' } }, d.tk || 0),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', fontSize: 9.5 } }, d.keterangan || '-'),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', textAlign: 'center', fontWeight: 700 } }, hariHadir),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', textAlign: 'right' } }, formatRupiah(tarif)),
+              e('td', { style: { border: '1px solid #000', padding: '3px 6px', textAlign: 'right', fontWeight: 700 } }, formatRupiah(t))
+            )
+          )
+        ),
+        e(
+          'tfoot',
+          null,
+          e(
+            'tr',
+            null,
+            e('td', { colSpan: 11, style: { border: '1px solid #000', padding: '5px 6px', textAlign: 'right', fontWeight: 700 } }, 'TOTAL KESELURUHAN'),
+            e('td', { style: { border: '1px solid #000', padding: '5px 6px', textAlign: 'right', fontWeight: 700 } }, formatRupiah(total))
+          )
+        )
+      ),
+      e(
+        'p',
+        { style: { fontSize: 9.5, color: '#555', marginTop: 14 } },
+        'Dicetak otomatis oleh SIMPATIK \u2014 tarif mengacu PMK No. 32 Tahun 2025 tentang Standar Biaya Masukan TA 2026. Dokumen ini adalah rekap kerja, mohon diverifikasi sebelum dijadikan dasar pencairan.'
+      ),
+      e(
+        'div',
+        { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 40 } },
+        e(
+          'div',
+          { style: { textAlign: 'center', width: 240, fontSize: 11.5 } },
+          e('div', null, `Bandar Lampung, ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}`),
+          e('div', null, 'Kepala Bagian Tata Usaha dan Umum'),
+          e('div', { style: { height: 60 } }),
+          e('div', { style: { fontWeight: 700, textDecoration: 'underline' } }, 'Sari Mesfriati, SE, M.Si')
+        )
+      )
     );
   }
 
@@ -2844,9 +3441,22 @@ table { border-collapse: collapse; width: 100%; }
     const now = new Date();
     const hariIni = keYMD(now);
     const jamSekarang = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const menitSekarang = now.getHours() * 60 + now.getMinutes();
+    const keMenit = (jam) => { const [h, m] = jam.split(':').map(Number); return h * 60 + m; };
+
     return DAFTAR_RUANGAN.map((ruangan) => {
-      const aktif = daftar.find((b) => b.ruangan === ruangan && b.tanggal === hariIni && b.jamMulai <= jamSekarang && jamSekarang < b.jamSelesai);
-      return { ruangan, aktif };
+      const jadwalHariIni = daftar
+        .filter((b) => b.ruangan === ruangan && b.tanggal === hariIni)
+        .sort((a, b) => a.jamMulai.localeCompare(b.jamMulai));
+      const aktif = jadwalHariIni.find((b) => b.jamMulai <= jamSekarang && jamSekarang < b.jamSelesai);
+      if (aktif) {
+        const mulai = keMenit(aktif.jamMulai);
+        const selesai = keMenit(aktif.jamSelesai);
+        const progres = Math.min(100, Math.max(0, ((menitSekarang - mulai) / Math.max(1, selesai - mulai)) * 100));
+        return { ruangan, aktif, progres };
+      }
+      const berikutnya = jadwalHariIni.find((b) => b.jamMulai > jamSekarang);
+      return { ruangan, aktif: null, berikutnya };
     });
   }
 
@@ -2877,6 +3487,14 @@ table { border-collapse: collapse; width: 100%; }
     const [filterRuangan, setFilterRuangan] = useState('Semua');
     const [tampilan, setTampilan] = useState('kalender'); // 'kalender' | 'daftar'
     const [awalTampil, setAwalTampil] = useState(() => awalMinggu(new Date()));
+    const [filterStatusHero, setFilterStatusHero] = useState('semua'); // 'semua' | 'kosong' | 'terpakai'
+    const [tick, setTick] = useState(0);
+    const kontenRef = useRef(null);
+
+    useEffect(() => {
+      const t = setInterval(() => setTick((x) => x + 1), 30000);
+      return () => clearInterval(t);
+    }, []);
 
     async function sinkronDariSheet(diam) {
       setSinkronBerjalan(true);
@@ -2909,7 +3527,16 @@ table { border-collapse: collapse; width: 100%; }
 
     const hariMinggu = useMemo(() => Array.from({ length: 7 }, (_, i) => tambahHari(awalTampil, i)), [awalTampil]);
     const ruanganTampil = filterRuangan === 'Semua' ? DAFTAR_RUANGAN : [filterRuangan];
-    const statusSekarang = useMemo(() => statusRuanganSekarang(daftar), [daftar]);
+    const statusSekarang = useMemo(() => statusRuanganSekarang(daftar), [daftar, tick]);
+    const statusTampil = statusSekarang.filter((s) =>
+      filterStatusHero === 'semua' || (filterStatusHero === 'kosong' && !s.aktif) || (filterStatusHero === 'terpakai' && !!s.aktif)
+    );
+
+    function pilihRuanganDariHero(ruangan) {
+      setFilterRuangan(ruangan);
+      setTampilan('kalender');
+      if (kontenRef.current) kontenRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     function handleSave(data, original) {
       const id = original ? original.id : `pr-${Date.now()}`;
@@ -2954,29 +3581,51 @@ table { border-collapse: collapse; width: 100%; }
           e(
             'div',
             { className: 'public-hero__inner' },
-            e('span', { className: 'public-hero__eyebrow' }, e(IconDoor, { size: 12 }), 'Papan Jadwal Ruang'),
+            e('span', { className: 'public-hero__eyebrow' }, e(IconDoor, { size: 12 }), 'Papan Jadwal Ruang', e('span', { className: 'live-dot', title: 'Diperbarui otomatis' })),
             e('h1', null, 'Ruang mana yang kosong sekarang?'),
-            e('p', null, 'Lihat status tiap ruangan Kanwil Kemenkum Lampung secara langsung, atau cek jadwal lengkap seminggu ke depan di bawah.'),
+            e('p', null, 'Klik salah satu ruangan untuk langsung melihat jadwalnya, atau cek jadwal seminggu ke depan di bawah.'),
+            e(
+              'div',
+              { className: 'hero-chip-group' },
+              [
+                ['semua', 'Semua'],
+                ['kosong', 'Kosong'],
+                ['terpakai', 'Terpakai'],
+              ].map(([val, label]) =>
+                e('button', { key: val, className: `hero-chip ${filterStatusHero === val ? 'active' : ''}`, onClick: () => setFilterStatusHero(val) }, label)
+              )
+            ),
             e(
               'div',
               { className: 'room-status-strip' },
-              statusSekarang.map((s) =>
+              statusTampil.map((s, i) =>
                 e(
-                  'div',
-                  { className: 'room-status-card', key: s.ruangan },
+                  'button',
+                  {
+                    className: `room-status-card ${s.aktif ? 'is-dipakai' : 'is-kosong'}`, key: s.ruangan, style: { animationDelay: `${i * 45}ms` },
+                    onClick: () => pilihRuanganDariHero(s.ruangan),
+                  },
                   e(
                     'div',
                     { className: 'room-status-card__top' },
                     e('span', { className: 'room-status-card__name' }, s.ruangan),
-                    e('span', { className: `room-status-dot ${s.aktif ? 'dipakai' : 'kosong'}` })
+                    e('span', { className: `room-status-badge ${s.aktif ? 'dipakai' : 'kosong'}` }, s.aktif ? 'Dipakai' : 'Kosong')
                   ),
                   e(
                     'div',
                     { className: `room-status-card__info ${s.aktif ? '' : 'kosong'}` },
-                    s.aktif ? `Dipakai \u2014 ${s.aktif.kegiatan || s.aktif.peminjam}` : 'Kosong saat ini'
-                  )
+                    s.aktif ? `${s.aktif.kegiatan || s.aktif.peminjam}` : s.berikutnya ? `Hingga ${s.berikutnya.jamMulai}` : 'Sepanjang hari'
+                  ),
+                  s.aktif &&
+                    e(
+                      'div',
+                      { className: 'room-status-progress', title: `Selesai ${s.aktif.jamSelesai}` },
+                      e('div', { className: 'room-status-progress__fill', style: { width: `${s.progres}%` } })
+                    ),
+                  e('span', { className: 'room-status-card__cta' }, 'Lihat jadwal \u2192')
                 )
-              )
+              ),
+              statusTampil.length === 0 && e('div', { className: 'room-status-empty' }, `Tidak ada ruangan berstatus "${filterStatusHero}" saat ini.`)
             )
           )
         ),
@@ -3018,7 +3667,7 @@ table { border-collapse: collapse; width: 100%; }
         ),
       e(
         'div',
-        { className: 'filter-bar' },
+        { className: 'filter-bar', ref: kontenRef },
         e('div', { className: 'input-search' }, e(IconSearch, { size: 15 }), e('input', { placeholder: 'Cari peminjam, ruangan, atau kegiatan...', value: query, onChange: (ev) => setQuery(ev.target.value) })),
         e(
           'select',
