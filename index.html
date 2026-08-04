@@ -722,8 +722,12 @@ table { border-collapse: collapse; width: 100%; }
   <!-- React & ReactDOM dari CDN (versi produksi, ringan) -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Pembuat file .docx (dipakai fitur Berkas Persiapan Pelantikan untuk mengunduh dokumen Word) -->
-  <script src="https://unpkg.com/docx@8.5.0/build/index.js" crossorigin></script>
+  <!-- Pembuat file .docx (dipakai fitur Berkas Persiapan Pelantikan untuk mengunduh dokumen Word).
+       PENTING: harus pakai build/index.umd.min.js (bundel UMD siap-browser yang otomatis mendaftar
+       sebagai window.docx). build/index.js adalah bundel Node/CJS dan TIDAK mendaftarkan window.docx
+       sama sekali saat dimuat langsung lewat tag <script> biasa di browser — itulah penyebab pesan
+       "Pustaka pembuat .docx belum termuat" yang muncul terus meski koneksi internet normal. -->
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.min.js" crossorigin onerror="window.__docxCdnGagal = true"></script>
 
   <!-- Seluruh logika aplikasi (React murni, tanpa JSX sehingga tidak perlu Babel/compiler apa pun) -->
   <script>
@@ -4149,7 +4153,12 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   function _docxLib() {
-    if (!window.docx) throw new Error('Pustaka pembuat .docx belum termuat. Pastikan koneksi internet aktif lalu muat ulang halaman.');
+    if (!window.docx) {
+      if (window.__docxCdnGagal) {
+        throw new Error('Pustaka pembuat .docx gagal dimuat dari CDN (unpkg.com). Cek koneksi internet, matikan pemblokir iklan/skrip untuk unpkg.com, lalu muat ulang halaman.');
+      }
+      throw new Error('Pustaka pembuat .docx belum selesai dimuat. Tunggu beberapa detik lalu coba lagi, atau muat ulang halaman.');
+    }
     return window.docx;
   }
 
@@ -4995,7 +5004,7 @@ table { border-collapse: collapse; width: 100%; }
           )
         ),
       formState && e(PelantikanForm, { initial: formState.initial, pegawai, onClose: () => setFormState(null), onSave: handleSave }),
-      undanganUntuk && e(UndanganPelantikanForm, { data: undanganUntuk, onClose: () => setUndanganUntuk(null) })
+      undanganUntuk && e(UndanganPelantikanForm, { data: undanganUntuk, pegawai, onClose: () => setUndanganUntuk(null) })
     );
   }
 
@@ -5052,6 +5061,15 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   function Simoris() {
+    const [muatUlangKe, setMuatUlangKe] = useState(0);
+    const [lama, setLama] = useState(false);
+
+    useEffect(() => {
+      setLama(false);
+      const t = setTimeout(() => setLama(true), 3500);
+      return () => clearTimeout(t);
+    }, [muatUlangKe]);
+
     return e(
       'div',
       null,
@@ -5066,23 +5084,40 @@ table { border-collapse: collapse; width: 100%; }
           e('p', null, 'Aplikasi eksternal untuk penomoran surat otomatis, terintegrasi langsung di dalam SIMPATIK Lampung.')
         ),
         e(
+          'button',
+          { className: 'btn', style: { background: 'rgba(255,255,255,0.15)', color: '#fff' }, onClick: () => setMuatUlangKe((k) => k + 1) },
+          e(IconRefresh, { size: 15 }),
+          ' Muat Ulang'
+        ),
+        e(
           'a',
           { href: SIMORIS_URL, target: '_blank', rel: 'noopener noreferrer', className: 'btn', style: { background: 'rgba(255,255,255,0.15)', color: '#fff' } },
           'Buka Tab Baru ',
           e(IconExternal, { size: 15 })
         )
       ),
+      lama &&
+        e(
+          'div',
+          { style: { background: 'var(--color-warning-soft)', color: '#7a5200', borderRadius: 10, padding: '10px 14px', fontSize: 12.5, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+          e(IconFiles, { size: 15 }),
+          e(
+            'span',
+            null,
+            e('strong', null, 'Area di bawah kosong/tidak muncul? '),
+            'Kemungkinan besar SIMORIS mengirim header keamanan (',
+            e('code', null, 'X-Frame-Options'),
+            ' / ',
+            e('code', null, 'Content-Security-Policy'),
+            ') yang melarang tampil di dalam kotak (embed) seperti ini. Klik ',
+            e('strong', null, '"Buka Tab Baru"'),
+            ' di atas untuk memakai SIMORIS secara penuh \u2014 ini bukan masalah di sisi SIMPATIK, dan bisa diperbaiki permanen dengan mengizinkan domain SIMPATIK pada pengaturan header worker SIMORIS.'
+          )
+        ),
       e(
         'div',
         { className: 'simoris-frame-wrap' },
-        e('iframe', { src: SIMORIS_URL, title: 'SIMORIS', referrerPolicy: 'no-referrer-when-downgrade' })
-      ),
-      e(
-        'p',
-        { style: { fontSize: 12, color: 'var(--color-text-muted)', marginTop: 10 } },
-        'Jika area di atas tampak kosong, kemungkinan SIMORIS memblokir tampilan tersemat (embed) untuk keamanan \u2014 gunakan tombol ',
-        e('strong', null, 'Buka Tab Baru'),
-        ' di atas.'
+        e('iframe', { key: muatUlangKe, src: SIMORIS_URL, title: 'SIMORIS', referrerPolicy: 'no-referrer-when-downgrade' })
       )
     );
   }
