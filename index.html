@@ -621,7 +621,7 @@ table { border-collapse: collapse; width: 100%; }
   padding: 4px 10px; border-radius: 999px;
 }
 .peserta-row {
-  display: grid; grid-template-columns: 1.4fr 1.2fr 1.2fr 1fr auto; gap: 8px; align-items: center;
+  display: grid; grid-template-columns: 1.3fr 1.1fr 0.8fr 1fr 1.1fr 0.9fr auto; gap: 8px; align-items: center;
   padding: 8px 0; border-bottom: 1px dashed var(--color-border);
 }
 .peserta-row:last-child { border-bottom: none; }
@@ -722,12 +722,15 @@ table { border-collapse: collapse; width: 100%; }
   <!-- React & ReactDOM dari CDN (versi produksi, ringan) -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Pembuat file .docx (dipakai fitur Berkas Persiapan Pelantikan untuk mengunduh dokumen Word).
+  <!-- Pembuat file .docx (dipakai fitur Berkas Persiapan Pelantikan & SPP/SPMT untuk mengunduh dokumen Word).
        PENTING: harus pakai build/index.umd.min.js (bundel UMD siap-browser yang otomatis mendaftar
        sebagai window.docx). build/index.js adalah bundel Node/CJS dan TIDAK mendaftarkan window.docx
-       sama sekali saat dimuat langsung lewat tag <script> biasa di browser — itulah penyebab pesan
-       "Pustaka pembuat .docx belum termuat" yang muncul terus meski koneksi internet normal. -->
-  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.min.js" crossorigin onerror="window.__docxCdnGagal = true"></script>
+       sama sekali saat dimuat langsung lewat tag <script> biasa di browser.
+       Tag ini adalah percobaan pertama (tercepat jika unpkg.com bisa diakses); jika gagal (mis.
+       diblokir firewall kantor / pemblokir iklan), fungsi ensureDocxLib() di bawah otomatis mencoba
+       ulang lewat jsdelivr lalu cdnjs sebelum benar-benar menyerah, sehingga tombol "Unduh .docx"
+       tidak lagi gagal hanya karena satu sumber CDN saja bermasalah. -->
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.min.js" crossorigin></script>
 
   <!-- Seluruh logika aplikasi (React murni, tanpa JSX sehingga tidak perlu Babel/compiler apa pun) -->
   <script>
@@ -4152,12 +4155,45 @@ table { border-collapse: collapse; width: 100%; }
     };
   }
 
+  /* Beberapa sumber CDN dicoba berurutan supaya unduhan .docx tidak gagal hanya karena satu
+     sumber (mis. unpkg.com) diblokir firewall kantor / pemblokir iklan / jaringan lambat. */
+  const DOCX_CDN_URLS = [
+    'https://unpkg.com/docx@8.5.0/build/index.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.umd.min.js',
+  ];
+  let _docxLoadPromise = null;
+  function ensureDocxLib() {
+    if (window.docx) return Promise.resolve(window.docx);
+    if (_docxLoadPromise) return _docxLoadPromise;
+    _docxLoadPromise = (async () => {
+      for (const url of DOCX_CDN_URLS) {
+        if (window.docx) break;
+        try {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = url;
+            s.crossOrigin = 'anonymous';
+            s.onload = () => resolve();
+            s.onerror = () => reject(new Error(`gagal memuat ${url}`));
+            document.head.appendChild(s);
+          });
+        } catch (err) {
+          /* coba sumber CDN berikutnya */
+        }
+      }
+      if (!window.docx) {
+        _docxLoadPromise = null;
+        throw new Error('Pustaka pembuat .docx gagal dimuat dari semua sumber CDN (unpkg, jsdelivr, cdnjs). Periksa koneksi internet Anda \u2014 kemungkinan ada pemblokir iklan/skrip atau firewall kantor yang memblokir CDN \u2014 lalu coba lagi.');
+      }
+      return window.docx;
+    })();
+    return _docxLoadPromise;
+  }
+
   function _docxLib() {
     if (!window.docx) {
-      if (window.__docxCdnGagal) {
-        throw new Error('Pustaka pembuat .docx gagal dimuat dari CDN (unpkg.com). Cek koneksi internet, matikan pemblokir iklan/skrip untuk unpkg.com, lalu muat ulang halaman.');
-      }
-      throw new Error('Pustaka pembuat .docx belum selesai dimuat. Tunggu beberapa detik lalu coba lagi, atau muat ulang halaman.');
+      throw new Error('Pustaka pembuat .docx belum siap dimuat. Coba lagi sesaat.');
     }
     return window.docx;
   }
@@ -4565,6 +4601,105 @@ table { border-collapse: collapse; width: 100%; }
     return new Document({ sections: [{ properties: {}, children }] });
   }
 
+  /* ---- SPMT & SPP: satu berkas berisi 1 halaman per pegawai yang dilantik, mengikuti format
+     resmi Kanwil (kop surat sama seperti lembar 1-8, nomor surat opsional dari form Acara) ---- */
+  function baris2Kolom(label, isi) {
+    const { Paragraph, TextRun } = _docxLib();
+    return new Paragraph({
+      spacing: { after: 60 },
+      indent: { left: 400 },
+      children: [
+        new TextRun({ text: label.padEnd(17, ' '), size: 22 }),
+        new TextRun({ text: `:  ${isi || '.....................'}`, size: 22 }),
+      ],
+    });
+  }
+  function buildSPMT(acara) {
+    const { Document, AlignmentType } = _docxLib();
+    const t = pecahTanggalAcara(acara.tanggal);
+    const pejabat = acara.pejabatPelantik || {};
+    const sk = (acara.skList && acara.skList[0]) || {};
+    const skTanggal = sk.tanggal ? new Date(`${sk.tanggal}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '............';
+    const peserta = (acara.peserta && acara.peserta.length) ? acara.peserta : [{ nama: '............', nip: '............', golongan: '............', jabatanBaru: '............', unitKerjaBaru: '' }];
+    const { Paragraph } = _docxLib();
+    const children = [];
+    peserta.forEach((p, i) => {
+      if (i > 0) children.push(new Paragraph({ text: '', pageBreakBefore: true }));
+      children.push(
+        ...kopSurat(),
+        judul('SURAT PERNYATAAN MELAKSANAKAN TUGAS', { size: 24, after: 20 }),
+        teks(`NOMOR : ${acara.nomorSPMT || '............'}`, { align: AlignmentType.CENTER, after: 200 }),
+        teks('Yang bertanda tangan dibawah ini :', { align: AlignmentType.LEFT, after: 100 }),
+        baris2Kolom('N a m a', pejabat.nama),
+        baris2Kolom('N I P', pejabat.nip),
+        baris2Kolom('Pangkat/Gol.Ruang', pejabat.golongan),
+        baris2Kolom('J a b a t a n', `${pejabat.jabatan || 'Kepala Kantor Wilayah'}\nKementerian Hukum Lampung`),
+        kosong(80),
+        teks('Dengan ini menyatakan sesungguhnya bahwa :', { align: AlignmentType.LEFT, after: 100 }),
+        baris2Kolom('N a m a', p.nama),
+        baris2Kolom('N I P', p.nip),
+        baris2Kolom('Pangkat/Gol.Ruang', p.golongan),
+        baris2Kolom('J a b a t a n', `${p.jabatanBaru}${p.unitKerjaBaru ? '\n' + p.unitKerjaBaru : ''}`),
+        kosong(80),
+        teks(`berdasarkan Keputusan Menteri Hukum Republik Indonesia Nomor : ${sk.nomor || '............'} tanggal ${skTanggal} tentang ${(acara.skTentang || 'Pengangkatan Dalam Jabatan Fungsional').toLowerCase()}, terhitung mulai tanggal ${t.tanggalAngka} ${t.bulan} ${t.tahun} telah nyata melaksanakan tugas sebagai ${p.jabatanBaru || '............'}${p.unitKerjaBaru ? ' pada ' + p.unitKerjaBaru : ''}.`, { after: 160 }),
+        teks('Demikian Surat Pernyataan ini  saya buat dengan sesungguhnya mengingat Sumpah Jabatan/ Pegawai Negeri Sipil, dan apabila dikemudian hari isi Surat Pernyataan ini tidak benar yang mengakibatkan kerugian terhadap Negara, maka saya bersedia menanggung kerugian tersebut.', { after: 160 }),
+        teks('Asli Surat Pernyataan ini disampaikan kepada Kepala Kantor Pelayanan Perbendaharaan Negara.', { after: 260 }),
+        teks(`Bandar Lampung, ${t.tanggalAngka} ${t.bulan} ${t.tahun}`, { align: AlignmentType.RIGHT, after: 0 }),
+        teks(`${pejabat.jabatan || 'Kepala Kantor Wilayah'},`, { align: AlignmentType.RIGHT, after: 700 }),
+        teks(pejabat.nama || '............', { align: AlignmentType.RIGHT, bold: true, after: 260 }),
+        teks('Tembusan   :', { after: 0, size: 18 }),
+        teks('1. Kepala Badan Kepegawaian Negara;', { after: 0, size: 18, indent: { left: 300 } }),
+        teks('2. Sekretaris Jenderal Kementerian Hukum;', { after: 0, size: 18, indent: { left: 300 } }),
+        teks('3. Pembuat Daftar Gaji yang bersangkutan;', { after: 0, size: 18, indent: { left: 300 } }),
+        teks('4. Pegawai yang bersangkutan .', { after: 0, size: 18, indent: { left: 300 }, pageBreakBefore: false }),
+      );
+      if (i < peserta.length - 1) children[children.length - 1] = teks('4. Pegawai yang bersangkutan .', { after: 0, size: 18, indent: { left: 300 } });
+    });
+    return new Document({ sections: [{ properties: {}, children }] });
+  }
+
+  function buildSPP(acara) {
+    const { Document, AlignmentType } = _docxLib();
+    const t = pecahTanggalAcara(acara.tanggal);
+    const pejabat = acara.pejabatPelantik || {};
+    const sk = (acara.skList && acara.skList[0]) || {};
+    const skTanggal = sk.tanggal ? new Date(`${sk.tanggal}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '............';
+    const peserta = (acara.peserta && acara.peserta.length) ? acara.peserta : [{ nama: '............', nip: '............', golongan: '............', jabatanBaru: '............', unitKerjaBaru: '' }];
+    const children = [];
+    peserta.forEach((p, i) => {
+      if (i > 0) children.push(...kopSurat());
+      else children.push(...kopSurat());
+      children.push(
+        judul('SURAT PERNYATAAN PELANTIKAN', { size: 24, after: 20 }),
+        teks(`NOMOR : ${acara.nomorSPP || '............'}`, { align: AlignmentType.CENTER, after: 200 }),
+        teks('Yang bertanda tangan dibawah ini :', { align: AlignmentType.LEFT, after: 100 }),
+        baris2Kolom('N a m a', pejabat.nama),
+        baris2Kolom('N I P', pejabat.nip),
+        baris2Kolom('Pangkat/Gol.Ruang', pejabat.golongan),
+        baris2Kolom('J a b a t a n', `${pejabat.jabatan || 'Kepala Kantor Wilayah'}\nKementerian Hukum Lampung`),
+        kosong(80),
+        teks('Dengan ini menyatakan sesungguhnya bahwa :', { align: AlignmentType.LEFT, after: 100 }),
+        baris2Kolom('N a m a', p.nama),
+        baris2Kolom('N I P', p.nip),
+        baris2Kolom('Pangkat/Gol.Ruang', p.golongan),
+        baris2Kolom('J a b a t a n', `${p.jabatanBaru}${p.unitKerjaBaru ? '\n' + p.unitKerjaBaru : ''}`),
+        kosong(80),
+        teks(`berdasarkan Keputusan Menteri Hukum Republik Indonesia Nomor : ${sk.nomor || '............'} tanggal ${skTanggal} telah diangkat dalam Jabatan ${p.jabatanBaru || '............'}${p.unitKerjaBaru ? ' ' + p.unitKerjaBaru : ''} dan telah dilantik oleh ${pejabat.jabatan || 'Kepala Kantor Wilayah'} pada Tanggal ${t.tanggalAngka} ${t.bulan} ${t.tahun}.`, { after: 160 }),
+        teks('Demikian Surat Pernyataan Pelantikan ini  saya buat dengan sesungguhnya mengingat Sumpah Jabatan/ Pegawai Negeri Sipil, dan apabila dikemudian hari isi Surat Pernyataan ini tidak benar yang mengakibatkan kerugian terhadap Negara, maka saya bersedia menanggung kerugian tersebut.', { after: 160 }),
+        teks('Asli Surat Pernyataan ini disampaikan kepada Kepala Kantor Pelayanan Perbendaharaan Negara.', { after: 260 }),
+        teks(`Bandar Lampung, ${t.tanggalAngka} ${t.bulan} ${t.tahun}`, { align: AlignmentType.RIGHT, after: 0 }),
+        teks(`${pejabat.jabatan || 'Kepala Kantor Wilayah'},`, { align: AlignmentType.RIGHT, after: 700 }),
+        teks(pejabat.nama || '............', { align: AlignmentType.RIGHT, bold: true, after: 260 }),
+        teks('Tembusan   :', { after: 0, size: 18 }),
+        teks('1. Kepala Badan Kepegawaian Negara;', { after: 0, size: 18, indent: { left: 300 } }),
+        teks('2. Sekretaris Jenderal Kementerian Hukum;', { after: 0, size: 18, indent: { left: 300 } }),
+        teks('3. Pembuat Daftar Gaji yang bersangkutan;', { after: 0, size: 18, indent: { left: 300 } }),
+        teks('4. Pegawai yang bersangkutan .', { after: 0, size: 18, indent: { left: 300 } }),
+      );
+    });
+    return new Document({ sections: [{ properties: {}, children }] });
+  }
+
   const BERKAS_PELANTIKAN_TYPES = [
     { id: 1, kode: 'lembar-1', label: 'Naskah Pelantikan', desc: 'Teks pelantikan yang dibacakan pejabat pelantik (lembar I).', build: buildLembar1NaskahPelantikan, file: 'Lembar 1 - Naskah Pelantikan' },
     { id: 2, kode: 'lembar-2', label: 'Naskah Sumpah Jabatan', desc: 'Teks sumpah jabatan yang diikuti pejabat yang dilantik (lembar II).', build: buildLembar2NaskahSumpah, file: 'Lembar 2 - Naskah Sumpah Jabatan' },
@@ -4647,7 +4782,8 @@ table { border-collapse: collapse; width: 100%; }
       skList: [{ nomor: '', tanggal: '' }],
       skTentang: 'PENGANGKATAN DALAM JABATAN FUNGSIONAL DI LINGKUNGAN KEMENTERIAN HUKUM DAN HAK ASASI MANUSIA',
       tempatPenetapanSK: 'JAKARTA',
-      pejabatPelantik: { nama: '', nip: '', jabatan: 'Kepala Divisi Administrasi Kantor Wilayah Kementerian Hukum dan Hak Asasi Manusia Lampung' },
+      pejabatPelantik: { nama: '', nip: '', jabatan: 'Kepala Divisi Administrasi Kantor Wilayah Kementerian Hukum dan Hak Asasi Manusia Lampung', golongan: '' },
+      nomorSPMT: '', nomorSPP: '',
       kepalaKantorWilayah: { nama: '' },
       penandatanganSK: { nama: '', nip: '', jabatan: 'Kepala Biro Kepegawaian' },
       perwiraUpacara: { nama: '', nip: '', jabatan: 'Plt. Kepala Bagian Umum' },
@@ -4658,10 +4794,25 @@ table { border-collapse: collapse; width: 100%; }
       status: 'Draft',
     };
   }
-  function pesertaKosong() { return { nama: '', nip: '', jabatanLama: '', jabatanBaru: '', unitKerjaBaru: '' }; }
+  function pesertaKosong() { return { nama: '', nip: '', golongan: '', jabatanLama: '', jabatanBaru: '', unitKerjaBaru: '' }; }
 
   function AcaraPelantikanForm({ initial, pegawai, onClose, onSave }) {
-    const [form, setForm] = useState(initial || acaraKosong());
+    // Digabung dengan acaraKosong() supaya acara lama yang tersimpan sebelum field baru
+    // ditambahkan (golongan, nomorSPMT, nomorSPP, dst) tetap aman dibuka untuk diedit.
+    const [form, setForm] = useState(() => {
+      const dasar = acaraKosong();
+      if (!initial) return dasar;
+      return {
+        ...dasar,
+        ...initial,
+        pejabatPelantik: { ...dasar.pejabatPelantik, ...initial.pejabatPelantik },
+        kepalaKantorWilayah: { ...dasar.kepalaKantorWilayah, ...initial.kepalaKantorWilayah },
+        penandatanganSK: { ...dasar.penandatanganSK, ...initial.penandatanganSK },
+        perwiraUpacara: { ...dasar.perwiraUpacara, ...initial.perwiraUpacara },
+        petugas: { ...dasar.petugas, ...initial.petugas },
+        peserta: (initial.peserta || []).map((p) => ({ ...pesertaKosong(), ...p })),
+      };
+    });
     const [error, setError] = useState('');
     const isEdit = !!initial;
 
@@ -4682,8 +4833,20 @@ table { border-collapse: collapse; width: 100%; }
       const p = pegawai.find((x) => x.nama === nama);
       setForm((f) => {
         const next = [...f.peserta];
-        next[i] = { ...next[i], nama, nip: p ? p.nip : next[i].nip, jabatanLama: p ? p.jabatan : next[i].jabatanLama };
+        next[i] = { ...next[i], nama, nip: p ? p.nip : next[i].nip, golongan: p ? p.golongan : next[i].golongan, jabatanLama: p ? p.jabatan : next[i].jabatanLama };
         return { ...f, peserta: next };
+      });
+    }
+    // Dipakai untuk field nama pejabat/petugas (mis. Pejabat Pelantik, MC, Pembaca SK, dst) agar
+    // bisa langsung dipilih dari Data Pegawai, bukan hanya diketik manual \u2014 NIP & golongan
+    // ikut terisi otomatis jika field tsb tersedia pada grup yang bersangkutan.
+    function pilihPegawaiN(group, field, nama) {
+      const p = pegawai.find((x) => x.nama === nama);
+      setForm((f) => {
+        const g = { ...f[group], [field]: nama };
+        if (p && Object.prototype.hasOwnProperty.call(g, 'nip')) g.nip = p.nip;
+        if (p && Object.prototype.hasOwnProperty.call(g, 'golongan')) g.golongan = p.golongan;
+        return { ...f, [group]: g };
       });
     }
 
@@ -4729,26 +4892,55 @@ table { border-collapse: collapse; width: 100%; }
         e('div', { className: 'section-title', style: { fontSize: 13, margin: '4px 0 10px' } }, 'Pejabat & Petugas Upacara'),
         e(
           'div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
-          e('div', null, e('label', { style: fieldStyle() }, 'Nama Pejabat Pelantik'), e('div', { className: 'input-search' }, e('input', { value: form.pejabatPelantik.nama, onChange: (ev) => ubahN('pejabatPelantik', 'nama', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Nama Pejabat Pelantik'),
+            e('select', { className: 'select-filter', style: { width: '100%', marginBottom: 6 }, value: '', onChange: (ev) => ev.target.value && pilihPegawaiN('pejabatPelantik', 'nama', ev.target.value) },
+              e('option', { value: '' }, '\u2014 Pilih dari Data Pegawai \u2014'), pegawai.map((x, xi) => e('option', { key: xi, value: x.nama }, x.nama))),
+            e('div', { className: 'input-search' }, e('input', { value: form.pejabatPelantik.nama, onChange: (ev) => ubahN('pejabatPelantik', 'nama', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'NIP Pejabat Pelantik'), e('div', { className: 'input-search' }, e('input', { value: form.pejabatPelantik.nip, onChange: (ev) => ubahN('pejabatPelantik', 'nip', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Pangkat/Gol. Pejabat Pelantik'), e('div', { className: 'input-search' }, e('input', { value: form.pejabatPelantik.golongan, onChange: (ev) => ubahN('pejabatPelantik', 'golongan', ev.target.value), placeholder: 'Pembina Utama Madya (IV/d)' }))),
           e('div', { style: { gridColumn: '1 / -1' } }, e('label', { style: fieldStyle() }, 'Jabatan Pejabat Pelantik'), e('div', { className: 'input-search' }, e('input', { value: form.pejabatPelantik.jabatan, onChange: (ev) => ubahN('pejabatPelantik', 'jabatan', ev.target.value) }))),
-          e('div', null, e('label', { style: fieldStyle() }, 'Nama Kepala Kantor Wilayah'), e('div', { className: 'input-search' }, e('input', { value: form.kepalaKantorWilayah.nama, onChange: (ev) => ubahN('kepalaKantorWilayah', 'nama', ev.target.value) }))),
-          e('div', null, e('label', { style: fieldStyle() }, 'Penandatangan SK (a.n. Menteri)'), e('div', { className: 'input-search' }, e('input', { value: form.penandatanganSK.nama, onChange: (ev) => ubahN('penandatanganSK', 'nama', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Nama Kepala Kantor Wilayah'),
+            e('select', { className: 'select-filter', style: { width: '100%', marginBottom: 6 }, value: '', onChange: (ev) => ev.target.value && pilihPegawaiN('kepalaKantorWilayah', 'nama', ev.target.value) },
+              e('option', { value: '' }, '\u2014 Pilih dari Data Pegawai \u2014'), pegawai.map((x, xi) => e('option', { key: xi, value: x.nama }, x.nama))),
+            e('div', { className: 'input-search' }, e('input', { value: form.kepalaKantorWilayah.nama, onChange: (ev) => ubahN('kepalaKantorWilayah', 'nama', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Penandatangan SK (a.n. Menteri)'),
+            e('select', { className: 'select-filter', style: { width: '100%', marginBottom: 6 }, value: '', onChange: (ev) => ev.target.value && pilihPegawaiN('penandatanganSK', 'nama', ev.target.value) },
+              e('option', { value: '' }, '\u2014 Pilih dari Data Pegawai \u2014'), pegawai.map((x, xi) => e('option', { key: xi, value: x.nama }, x.nama))),
+            e('div', { className: 'input-search' }, e('input', { value: form.penandatanganSK.nama, onChange: (ev) => ubahN('penandatanganSK', 'nama', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'NIP Penandatangan SK'), e('div', { className: 'input-search' }, e('input', { value: form.penandatanganSK.nip, onChange: (ev) => ubahN('penandatanganSK', 'nip', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'Jabatan Penandatangan SK'), e('div', { className: 'input-search' }, e('input', { value: form.penandatanganSK.jabatan, onChange: (ev) => ubahN('penandatanganSK', 'jabatan', ev.target.value) }))),
-          e('div', null, e('label', { style: fieldStyle() }, 'Nama Perwira Upacara'), e('div', { className: 'input-search' }, e('input', { value: form.perwiraUpacara.nama, onChange: (ev) => ubahN('perwiraUpacara', 'nama', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Nama Perwira Upacara'),
+            e('select', { className: 'select-filter', style: { width: '100%', marginBottom: 6 }, value: '', onChange: (ev) => ev.target.value && pilihPegawaiN('perwiraUpacara', 'nama', ev.target.value) },
+              e('option', { value: '' }, '\u2014 Pilih dari Data Pegawai \u2014'), pegawai.map((x, xi) => e('option', { key: xi, value: x.nama }, x.nama))),
+            e('div', { className: 'input-search' }, e('input', { value: form.perwiraUpacara.nama, onChange: (ev) => ubahN('perwiraUpacara', 'nama', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'NIP Perwira Upacara'), e('div', { className: 'input-search' }, e('input', { value: form.perwiraUpacara.nip, onChange: (ev) => ubahN('perwiraUpacara', 'nip', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'Jabatan Perwira Upacara'), e('div', { className: 'input-search' }, e('input', { value: form.perwiraUpacara.jabatan, onChange: (ev) => ubahN('perwiraUpacara', 'jabatan', ev.target.value) })))
         ),
 
         e(
           'div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 6 } },
-          e('div', null, e('label', { style: fieldStyle() }, 'MC'), e('div', { className: 'input-search' }, e('input', { value: form.petugas.mc, onChange: (ev) => ubahN('petugas', 'mc', ev.target.value) }))),
-          e('div', null, e('label', { style: fieldStyle() }, 'Pembaca SK'), e('div', { className: 'input-search' }, e('input', { value: form.petugas.pembacaSK, onChange: (ev) => ubahN('petugas', 'pembacaSK', ev.target.value) }))),
-          e('div', null, e('label', { style: fieldStyle() }, 'Dirigen'), e('div', { className: 'input-search' }, e('input', { value: form.petugas.dirigen, onChange: (ev) => ubahN('petugas', 'dirigen', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'MC'),
+            e('select', { className: 'select-filter', style: { width: '100%', marginBottom: 6 }, value: '', onChange: (ev) => ev.target.value && pilihPegawaiN('petugas', 'mc', ev.target.value) },
+              e('option', { value: '' }, '\u2014 Pilih dari Data Pegawai \u2014'), pegawai.map((x, xi) => e('option', { key: xi, value: x.nama }, x.nama))),
+            e('div', { className: 'input-search' }, e('input', { value: form.petugas.mc, onChange: (ev) => ubahN('petugas', 'mc', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Pembaca SK'),
+            e('select', { className: 'select-filter', style: { width: '100%', marginBottom: 6 }, value: '', onChange: (ev) => ev.target.value && pilihPegawaiN('petugas', 'pembacaSK', ev.target.value) },
+              e('option', { value: '' }, '\u2014 Pilih dari Data Pegawai \u2014'), pegawai.map((x, xi) => e('option', { key: xi, value: x.nama }, x.nama))),
+            e('div', { className: 'input-search' }, e('input', { value: form.petugas.pembacaSK, onChange: (ev) => ubahN('petugas', 'pembacaSK', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Dirigen'),
+            e('select', { className: 'select-filter', style: { width: '100%', marginBottom: 6 }, value: '', onChange: (ev) => ev.target.value && pilihPegawaiN('petugas', 'dirigen', ev.target.value) },
+              e('option', { value: '' }, '\u2014 Pilih dari Data Pegawai \u2014'), pegawai.map((x, xi) => e('option', { key: xi, value: x.nama }, x.nama))),
+            e('div', { className: 'input-search' }, e('input', { value: form.petugas.dirigen, onChange: (ev) => ubahN('petugas', 'dirigen', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'Protokoler (pisahkan koma)'), e('div', { className: 'input-search' }, e('input', { value: form.petugas.protokoler, onChange: (ev) => ubahN('petugas', 'protokoler', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'Pembawa Baki (pisahkan koma)'), e('div', { className: 'input-search' }, e('input', { value: form.petugas.pembawaBaki, onChange: (ev) => ubahN('petugas', 'pembawaBaki', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'Perlengkapan (pisahkan koma)'), e('div', { className: 'input-search' }, e('input', { value: form.petugas.perlengkapan, onChange: (ev) => ubahN('petugas', 'perlengkapan', ev.target.value) })))
+        ),
+
+        e('div', { className: 'section-title', style: { fontSize: 13, margin: '4px 0 10px' } }, 'Nomor Surat SPP / SPMT (opsional)'),
+        e(
+          'div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
+          e('div', null, e('label', { style: fieldStyle() }, 'Nomor SPMT'), e('div', { className: 'input-search' }, e('input', { value: form.nomorSPMT, onChange: (ev) => ubah('nomorSPMT', ev.target.value), placeholder: 'W.9-KP.03.01-1444' }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Nomor SPP'), e('div', { className: 'input-search' }, e('input', { value: form.nomorSPP, onChange: (ev) => ubah('nomorSPP', ev.target.value), placeholder: 'W.9-KP.03.04-3056' })))
         ),
 
         e('div', { className: 'section-title', style: { fontSize: 13, margin: '16px 0 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
@@ -4767,6 +4959,8 @@ table { border-collapse: collapse; width: 100%; }
               )
             ),
             e('div', { className: 'input-search' }, e('input', { value: p.nama, onChange: (ev) => ubahPeserta(i, 'nama', ev.target.value), placeholder: 'Nama pegawai', required: true })),
+            e('div', { className: 'input-search' }, e('input', { value: p.nip, onChange: (ev) => ubahPeserta(i, 'nip', ev.target.value), placeholder: 'NIP' })),
+            e('div', { className: 'input-search' }, e('input', { value: p.golongan, onChange: (ev) => ubahPeserta(i, 'golongan', ev.target.value), placeholder: 'Pangkat/Gol. (cth. Penata Tk. I (III/d))' })),
             e('div', { className: 'input-search' }, e('input', { value: p.jabatanBaru, onChange: (ev) => ubahPeserta(i, 'jabatanBaru', ev.target.value), placeholder: 'Jabatan fungsional baru', required: true })),
             e('div', { className: 'input-search' }, e('input', { value: p.unitKerjaBaru, onChange: (ev) => ubahPeserta(i, 'unitKerjaBaru', ev.target.value), placeholder: 'Unit kerja baru' })),
             e('button', { type: 'button', className: 'btn-action-red', onClick: () => hapusPeserta(i), title: 'Hapus peserta' }, e(IconTrash, { size: 13 }))
@@ -4790,6 +4984,7 @@ table { border-collapse: collapse; width: 100%; }
     async function unduh(item) {
       try {
         setMengunduh(item.kode);
+        await ensureDocxLib();
         const doc = item.build(acara);
         await unduhDocx(doc, namaAcaraFile(acara, item.file));
         showToast(`${item.label} berhasil diunduh (.docx).`);
