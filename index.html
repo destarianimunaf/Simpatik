@@ -4530,9 +4530,10 @@ table { border-collapse: collapse; width: 100%; }
 
   function kopSurat(judulSempit) {
     const { Table, TableRow, TableCell, Paragraph, TextRun, ImageRun, WidthType, VerticalAlign, AlignmentType, BorderStyle } = _docxLib();
-    const teksKop = judulSempit
-      ? [['KEMENTERIAN HUKUM', true, 21], ['REPUBLIK INDONESIA', false, 21], ['KANTOR WILAYAH LAMPUNG', true, 22]]
-      : [['KEMENTERIAN HUKUM', true, 21], ['REPUBLIK INDONESIA', false, 21], ['KANTOR WILAYAH LAMPUNG', true, 22]];
+    // Kop persis mengikuti kop surat resmi Kanwil (dicocokkan dari BA_Agustus_2026.docx):
+    // baris 1 "KEMENTERIAN HUKUM REPUBLIK INDONESIA" satu baris tidak tebal, baris 2 "KANTOR
+    // WILAYAH LAMPUNG" tebal -- keduanya 12pt Arial.
+    const teksKop = [['KEMENTERIAN HUKUM REPUBLIK INDONESIA', false, 24], ['KANTOR WILAYAH LAMPUNG', true, 24]];
     return [
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
@@ -4544,7 +4545,7 @@ table { border-collapse: collapse; width: 100%; }
                 width: { size: 14, type: WidthType.PERCENTAGE },
                 verticalAlign: VerticalAlign.CENTER,
                 borders: _noBorders(),
-                children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ data: _logoBytes(), type: 'png', transformation: { width: 72, height: 79 } })] })],
+                children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ data: _logoBytes(), type: 'png', transformation: { width: 69, height: 67 } })] })],
               }),
               new TableCell({
                 width: { size: 86, type: WidthType.PERCENTAGE },
@@ -4552,8 +4553,8 @@ table { border-collapse: collapse; width: 100%; }
                 borders: _noBorders(),
                 children: teksKop.map(([text, bold, size]) => new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 20 }, children: [new TextRun({ text, bold, size, font: 'Arial' })] }))
                   .concat([
-                    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: 'Jl. RW. Monginsidi No. 184, Bandar Lampung', size: 16, font: 'Arial' })] }),
-                    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: 'Telp. (0721) 474813 Fax. (0721) 471060, e-mail: lampung.kepegawaian@gmail.com', size: 16, font: 'Arial' })] }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: 'Jl. RW. MONGINSIDI NO. 184, BANDAR LAMPUNG', size: 18, font: 'Arial' })] }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: 'Telp. (0721) 474813 / Fax. (0721) 471060 e-mail : lampung.kepegawaian@gmail.com', size: 16, font: 'Arial' })] }),
                   ]),
               }),
             ],
