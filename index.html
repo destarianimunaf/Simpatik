@@ -762,6 +762,48 @@ table { border-collapse: collapse; width: 100%; }
 .preview-fields__label { font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .02em; }
 .preview-fields__value { font-size: 13px; color: var(--color-text); word-break: break-word; }
 
+/* ===== Pratinjau visual halaman dokumen (mendekati tampilan asli file Word) ===== */
+.doc-preview-wrap { background: var(--color-bg); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px; overflow-x: auto; }
+.doc-preview-pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 14px; font-size: 12.5px; font-weight: 600; color: var(--color-text-muted); }
+.doc-preview-pager button { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); cursor: pointer; transition: background .15s ease, transform .1s ease; }
+.doc-preview-pager button:hover:not(:disabled) { background: var(--color-primary-soft); border-color: var(--color-primary); }
+.doc-preview-pager button:active:not(:disabled) { transform: scale(0.92); }
+.doc-preview-pager button:disabled { opacity: .35; cursor: not-allowed; }
+.doc-preview-page {
+  background: #fff; color: #161616; font-family: Arial, Helvetica, sans-serif; font-size: 11.5px; line-height: 1.55;
+  width: 100%; max-width: 660px; margin: 0 auto; padding: 34px 38px; box-shadow: var(--shadow-lg);
+  border-radius: 3px; box-sizing: border-box; animation: dashFadeUp .35s ease both;
+}
+@media (max-width: 560px) { .doc-preview-page { padding: 22px 18px; font-size: 10.5px; } }
+.doc-preview-kop { display: flex; align-items: center; gap: 12px; }
+.doc-preview-kop__logo { width: 50px; height: 55px; object-fit: contain; flex-shrink: 0; }
+.doc-preview-kop__text { flex: 1; text-align: center; }
+.doc-preview-kop__text .b1 { font-weight: 700; font-size: 12.5px; margin: 0 0 1px; }
+.doc-preview-kop__text .b2 { font-weight: 400; font-size: 12.5px; margin: 0 0 1px; }
+.doc-preview-kop__text .b3 { font-weight: 700; font-size: 13px; margin: 0 0 3px; }
+.doc-preview-kop__text .addr { font-size: 8.5px; color: #222; margin: 0; }
+.doc-preview-hr { border: none; border-top: 2.5px solid #161616; margin: 8px 0 16px; }
+.doc-preview-logo-solo { display: flex; justify-content: center; margin-bottom: 12px; }
+.doc-preview-logo-solo img { width: 34px; height: 37px; object-fit: contain; }
+.doc-preview-title { text-align: center; font-weight: 700; text-transform: uppercase; margin: 0 0 3px; font-size: 12.5px; }
+.doc-preview-p { margin: 0 0 9px; text-align: justify; }
+.doc-preview-p.center { text-align: center; }
+.doc-preview-p.right { text-align: right; }
+.doc-preview-p.left { text-align: left; }
+.doc-preview-p.bold { font-weight: 700; }
+.doc-preview-label-row { display: flex; gap: 6px; margin: 0 0 3px; padding-left: 18px; }
+.doc-preview-label-row .lbl { flex: 0 0 128px; white-space: pre; }
+.doc-preview-space { display: block; }
+.doc-preview-sign { text-align: right; margin-top: 14px; }
+.doc-preview-sign .gap { height: 34px; }
+.doc-preview-table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 10.5px; }
+.doc-preview-table th, .doc-preview-table td { border: 1px solid #333; padding: 4px 6px; text-align: left; vertical-align: top; }
+.doc-preview-table th { text-align: center; font-weight: 700; background: #f2f2f2; }
+.doc-preview-cover { border: 2px solid #161616; display: flex; align-items: center; gap: 16px; padding: 22px; }
+.doc-preview-cover img { width: 64px; height: 70px; object-fit: contain; flex-shrink: 0; }
+.doc-preview-cover .txt { flex: 1; text-align: center; font-weight: 700; font-size: 13px; }
+.doc-preview-note { font-size: 11px; color: var(--color-text-faint); text-align: center; margin-top: 10px; }
+
 /* ===== Kalender jadwal ruang (ala jadwal piket) ===== */
 .jadwal-piket th { text-align: center; white-space: nowrap; }
 .jadwal-piket-cell { min-width: 108px; vertical-align: top; padding: 6px !important; cursor: pointer; }
@@ -1000,6 +1042,10 @@ table { border-collapse: collapse; width: 100%; }
   const IconArrowRight = svgIcon([
     e('line', { key: 1, x1: 5, y1: 12, x2: 19, y2: 12 }),
     e('polyline', { key: 2, points: '12 5 19 12 12 19' }),
+  ]);
+  const IconArrowLeft = svgIcon([
+    e('line', { key: 1, x1: 19, y1: 12, x2: 5, y2: 12 }),
+    e('polyline', { key: 2, points: '12 19 5 12 12 5' }),
   ]);
   const IconSparkles = svgIcon([
     e('path', { key: 1, d: 'M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8' }),
@@ -5020,13 +5066,209 @@ table { border-collapse: collapse; width: 100%; }
     return _dokumen(children);
   }
 
-  /* ============================== RINGKASAN PRATINJAU (SEBELUM UNDUH .DOCX) ==============================
-     Menyusun ringkasan data yang akan masuk ke setiap berkas, supaya admin bisa memeriksa dulu
-     (terutama nomor SPP/SPMT yang berbeda tiap orang) sebelum benar-benar mengunduh file .docx. */
   function fmtTglIndo(iso) {
     if (!iso) return '-';
     return new Date(`${iso}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
   }
+
+  const LOGO_DATA_URL = `data:image/png;base64,${LOGO_KEMENKUM_PNG_BASE64}`;
+
+  /* ============================== PRATINJAU VISUAL (MENDEKATI TAMPILAN HALAMAN ASLI) ==============================
+     Menyusun konten per halaman sebagai daftar blok sederhana ({t:'p'|'title'|'label'|'table'|'sign'|'space', ...})
+     yang lalu dirender oleh <DocPreviewPage>. Isinya sengaja meniru teks/susunan pada builder*() docx yang
+     sesungguhnya (lihat fungsi build... di atas) supaya pratinjau ini benar-benar mendekati file Word yang diunduh. */
+  function blokPratinjau(kode, acara, halaman) {
+    const t = pecahTanggalAcara(acara.tanggal);
+    const peserta = (acara.peserta && acara.peserta.length) ? acara.peserta : [{ nama: '............', nip: '............', golongan: '............', jabatanBaru: '............', unitKerjaBaru: '' }];
+    const p = peserta[halaman] || peserta[0];
+    const pejabat = acara.pejabatPelantik || {};
+    const jabatanPejabat = pejabat.jabatan || 'Kepala Divisi Administrasi Kantor Wilayah Kementerian Hukum Lampung';
+    const kepalaKanwil = (acara.kepalaKantorWilayah && acara.kepalaKantorWilayah.nama) || 'Kepala Kantor Wilayah';
+    const P = (text, extra = {}) => ({ t: 'p', text, ...extra });
+    const SP = (h) => ({ t: 'space', h });
+    const LBL = (label, value) => ({ t: 'label', label, value });
+    const SIGN = (lines) => ({ t: 'sign', lines });
+
+    switch (kode) {
+      case 'undangan':
+        return { kop: 'penuh', blocks: [
+          P(`Bandar Lampung, ${t.tanggalAngka || '..'} ${t.bulan} ${t.tahun || ''}`, { align: 'right' }),
+          LBL('Nomor', acara.nomorUndangan || '............'), LBL('Sifat', 'Penting'),
+          LBL('Lampiran', '1 (satu) lembar daftar nama'), LBL('Hal', 'Undangan/Panggilan Pelantikan dan Pengambilan Sumpah Jabatan'),
+          SP(10), P('Yth. Pejabat/Pegawai sebagaimana daftar nama terlampir', { align: 'left' }), P('di tempat', { align: 'left' }),
+          P('Sehubungan dengan akan dilaksanakannya pelantikan dan pengambilan sumpah jabatan di lingkungan Kantor Wilayah Kementerian Hukum Lampung, dengan ini kami mengundang/memanggil Saudara-Saudara sebagaimana daftar nama terlampir untuk hadir pada:'),
+          LBL('Hari, Tanggal', t.formatPanjang), LBL('Waktu', `Pukul ${acara.waktu || '............'} WIB s.d. selesai`),
+          LBL('Tempat', acara.tempat || '............'), LBL('Pakaian', 'Pakaian Sipil Lengkap (PSL)'),
+          SP(10), P('Mengingat pentingnya acara tersebut, dimohon kehadiran Saudara-Saudara tepat waktu. Demikian undangan/panggilan ini disampaikan, atas perhatian dan kehadirannya diucapkan terima kasih.'),
+          SIGN([{ text: `${(acara.pejabatPelantik && acara.pejabatPelantik.jabatan) || 'Kepala Kantor Wilayah Kementerian Hukum Lampung'},` }, { gap: true }, { text: (acara.pejabatPelantik && acara.pejabatPelantik.nama) || '............', bold: true }]),
+          { t: 'note', text: `+ Lampiran: daftar ${peserta.length} nama peserta pada halaman berikutnya.` },
+        ] };
+      case 'lembar-1':
+        return { kop: 'penuh', blocks: [
+          P('I', { align: 'right', bold: true }),
+          { t: 'title', text: 'NASKAH PELANTIKAN' },
+          SP(8), P('BISMILLAHIRAHMANIRRAHIIM,', { align: 'left' }),
+          P(`DENGAN MEMANJATKAN PUJI SYUKUR KEHADIRAT ALLAH S.W.T, TUHAN YANG MAHA ESA ATAS TAUFIK DAN HIDAYAH-NYA, MAKA PADA HARI INI ${t.hari.toUpperCase()} TANGGAL ${(t.tanggalKata || '').toUpperCase()} BULAN ${t.bulan.toUpperCase()} TAHUN ${(t.tahunKata || '').toUpperCase()}, SAYA ${jabatanPejabat.toUpperCase()}`),
+          P('DENGAN INI SECARA RESMI MELANTIK :'),
+          P('SAUDARA-SAUDARA DALAM JABATAN YANG BARU DI LINGKUNGAN KANTOR WILAYAH KEMENTERIAN HUKUM LAMPUNG'),
+          P('SAYA PERCAYA BAHWA SAUDARA-SAUDARA AKAN MELAKSANAKAN TUGAS DENGAN SEBAIK-BAIKNYA SESUAI DENGAN TANGGUNG JAWAB YANG DIBERIKAN'),
+          SP(8), P('SEMOGA ALLAH S.W.T, TUHAN YANG MAHA ESA BERSAMA KITA'),
+        ] };
+      case 'lembar-2':
+        return { kop: 'penuh', blocks: [
+          P('II', { align: 'right', bold: true }),
+          { t: 'title', text: 'NASKAH SUMPAH JABATAN' },
+          SP(8), P('SEBELUM SAYA MENGAMBIL SUMPAH, SAYA AKAN BERTANYA KEPADA SAUDARA-SAUDARA'),
+          P('APAKAH SAUDARA-SAUDARA BERSEDIA MENGUCAPKAN SUMPAH MENURUT AGAMA MASING-MASING ?   Bersedia'),
+          P('IKUTILAH KATA \u2013 KATA SAYA :'), P('DEMI ALLAH SAYA BERSUMPAH'), SP(6),
+          P('BAHWA SAYA // AKAN SETIA DAN TAAT // KEPADA UNDANG-UNDANG DASAR NEGARA REPUBLIK INDONESIA // TAHUN 1945 // SERTA AKAN MENJALANKAN SEGALA PERATURAN PERUNDANG-UNDANGAN // DENGAN SELURUS-LURUSNYA // DEMI DHARMA BAKTI SAYA // KEPADA BANGSA DAN NEGARA ;'), SP(6),
+          P('BAHWA SAYA // DALAM MENJALANKAN TUGAS JABATAN // AKAN MENJUNJUNG ETIKA JABATAN // BEKERJA DENGAN SEBAIK-BAIKNYA // DAN DENGAN PENUH RASA TANGGUNG JAWAB;'), SP(6),
+          P('BAHWA SAYA // AKAN MENJAGA INTEGRITAS // TIDAK MENYALAHGUNAKAN KEWENANGAN // SERTA MENGHINDARKAN DIRI // DARI PERBUATAN TERCELA.'),
+        ] };
+      case 'lembar-3':
+        return { kop: 'kecil', blocks: [
+          { t: 'title', text: 'KEPUTUSAN MENTERI HUKUM' }, P('REPUBLIK INDONESIA', { align: 'center', bold: true }),
+          SP(6),
+          ...(acara.skList && acara.skList.length ? acara.skList : [{ nomor: '............', tanggal: '' }]).map((sk) => P(`Nomor : ${sk.nomor || '............'}${sk.tanggal ? ' tanggal ' + fmtTglIndo(sk.tanggal) : ''}`, { align: 'center' })),
+          { t: 'title', text: 'T E N T A N G' },
+          P((acara.skTentang || 'PENGANGKATAN DALAM JABATAN FUNGSIONAL DI LINGKUNGAN KEMENTERIAN HUKUM').toUpperCase(), { align: 'center', bold: true }),
+          P('DI LINGKUNGAN KEMENTERIAN HUKUM', { align: 'center', bold: true }),
+          SP(4), P('MENTERI HUKUM', { align: 'center', bold: true }), P('REPUBLIK INDONESIA', { align: 'center', bold: true }), SP(4),
+          P('Menimbang  : dst ;', { align: 'left' }), P('Mengingat  : dst ;', { align: 'left' }),
+          { t: 'title', text: 'M E M U T U S K A N' },
+          LBL('MENETAPKAN', `KEPUTUSAN MENTERI HUKUM REPUBLIK INDONESIA TENTANG ${(acara.skTentang || '............').toUpperCase()} DI LINGKUNGAN KEMENTERIAN HUKUM`),
+          LBL('KESATU', 'MENGANGKAT :'),
+          { t: 'table', head: ['Nama', 'Jabatan Baru'], rows: peserta.map((x) => [x.nama || '-', `${x.jabatanBaru || '-'}${x.unitKerjaBaru ? ' pada ' + x.unitKerjaBaru : ''}`]) },
+          LBL('KEDUA', 'KEPUTUSAN INI MULAI BERLAKU TERHITUNG SEJAK TANGGAL PELANTIKAN...'),
+          LBL('KETIGA', 'PETIKAN KEPUTUSAN INI DISAMPAIKAN KEPADA YANG BERSANGKUTAN...'),
+          SP(10),
+          SIGN([
+            { text: `DITETAPKAN DI ${(acara.tempatPenetapanSK || 'JAKARTA').toUpperCase()}` }, { text: 'a.n. MENTERI HUKUM' }, { text: 'REPUBLIK INDONESIA' },
+            { text: (acara.penandatanganSK && acara.penandatanganSK.jabatan) || 'KEPALA BIRO KEPEGAWAIAN,' }, { gap: true },
+            { text: (acara.penandatanganSK && acara.penandatanganSK.nama) || '............', bold: true },
+            { text: `NIP. ${(acara.penandatanganSK && acara.penandatanganSK.nip) || '............'}` },
+          ]),
+        ] };
+      case 'lembar-4-5':
+        return { kop: 'penuh', blocks: [
+          P('SUSUNAN ACARA PELANTIKAN DAN PENGAMBILAN SUMPAH JABATAN FUNGSIONAL', { align: 'center', bold: true }),
+          P('PADA KANTOR WILAYAH KEMENTERIAN HUKUM LAMPUNG', { align: 'center', bold: true }), SP(6),
+          P('I.  PERSIAPAN :', { bold: true }),
+          P('\u2022 Upacara Pelantikan akan segera dimulai, hadirin dimohon tenang & mematikan HP.', { align: 'left' }),
+          P('II.  PELAKSANAAN UPACARA :', { bold: true }),
+          P(`\u2022 ${jabatanPejabat}, tiba ditempat Upacara`, { align: 'left' }),
+          P(`\u2022 Upacara Pelantikan dan Pengambilan Sumpah Jabatan Fungsional, ${t.formatPanjang}, dimulai`, { align: 'left' }),
+          P('\u2022 Menyanyikan Lagu Kebangsaan Indonesia Raya, dan Mars Kementerian Hukum', { align: 'left' }),
+          P('\u2022 Pembacaan Keputusan Menteri Hukum Republik Indonesia', { align: 'left' }),
+          P(`\u2022 Pembacaan Naskah Pelantikan oleh ${jabatanPejabat}`, { align: 'left' }),
+          P(`\u2022 Pengambilan & Penandatanganan Sumpah Jabatan oleh ${jabatanPejabat}`, { align: 'left' }),
+          P(`\u2022 Penyematan Tanda Jabatan oleh ${kepalaKanwil}`, { align: 'left' }),
+          P(`\u2022 Sambutan ${kepalaKanwil}`, { align: 'left' }),
+          P('\u2022 Diperdengarkan lagu Bagimu Negeri, dilanjutkan pembacaan do\u2019a, dan ucapan selamat', { align: 'left' }),
+          SP(10),
+          SIGN([{ text: `Bandar Lampung, ${t.tanggalAngka ? t.tanggalAngka + ' ' + t.bulan + ' ' + t.tahun : '............'}` }, { text: (acara.perwiraUpacara && acara.perwiraUpacara.jabatan) || 'Plt. Kepala Bagian Umum' }, { text: 'Selaku Perwira Upacara' }, { gap: true }, { text: (acara.perwiraUpacara && acara.perwiraUpacara.nama) || '............', bold: true }]),
+          { t: 'note', text: 'Rundown 2 halaman \u2014 halaman kedua (penandatanganan naskah & sambutan) tidak ditampilkan di pratinjau ini.' },
+        ] };
+      case 'lembar-6': {
+        const petugas = acara.petugas || {};
+        const listArr = (s) => (s || '').split(',').map((x) => x.trim()).filter(Boolean).join(', ');
+        return { kop: 'penuh', blocks: [
+          { t: 'title', text: 'PETUGAS PELANTIKAN FUNGSIONAL' }, P('KANTOR WILAYAH KEMENTERIAN HUKUM LAMPUNG', { align: 'center', bold: true }), SP(6),
+          LBL('Hari / Tanggal', `${t.hari} / ${t.tanggalAngka} ${t.bulan} ${t.tahun}`), LBL('Waktu', `Pukul ${acara.waktu || '10.00'} WIB s/d selesai`), LBL('Tempat', acara.tempat || '............'),
+          LBL('Penanggung Jawab', (acara.perwiraUpacara && acara.perwiraUpacara.jabatan) || 'Plt. Kepala Bagian Umum'),
+          { t: 'table', head: ['Petugas', 'Nama'], rows: [
+            ['MC', petugas.mc || '-'], ['Pembaca SK', petugas.pembacaSK || '-'], ['Dirigen', petugas.dirigen || '-'],
+            ['Protokoler', listArr(petugas.protokoler) || '-'], ['Pembawa Baki', listArr(petugas.pembawaBaki) || '-'], ['Perlengkapan', listArr(petugas.perlengkapan) || '-'],
+          ] },
+          SP(10),
+          SIGN([{ text: `Bandar Lampung, ${t.tanggalAngka} ${t.bulan} ${t.tahun}` }, { text: `${(acara.perwiraUpacara && acara.perwiraUpacara.jabatan) || 'Plt. Kepala Bagian Umum'},` }, { gap: true }, { text: (acara.perwiraUpacara && acara.perwiraUpacara.nama) || '............', bold: true }]),
+        ] };
+      }
+      case 'lembar-7':
+        return { kop: 'sampul', blocks: [
+          P('PELANTIKAN DAN PENGAMBILAN SUMPAH JABATAN FUNGSIONAL', { align: 'center', bold: true }),
+          P('DI LINGKUNGAN KANTOR WILAYAH KEMENTERIAN HUKUM LAMPUNG', { align: 'center', bold: true }),
+          P(`Bandar Lampung,  ${acara.tanggal ? `${t.bulan} ${t.tahun}` : 'Maret 2022'}`, { align: 'right', bold: true }),
+        ] };
+      case 'lembar-8':
+        return { kop: 'penuh', blocks: [
+          { t: 'title', text: 'DAFTAR HADIR' }, P('PELANTIKAN DAN PENGAMBILAN SUMPAH JABATAN FUNGSIONAL', { align: 'center', bold: true }),
+          P(`Hari/Tanggal : ${t.hari}, ${t.tanggalAngka} ${t.bulan} ${t.tahun}      Tempat : ${acara.tempat || '............'}`, { align: 'left' }),
+          { t: 'table', head: ['No', 'Nama', 'NIP', 'Jabatan Baru', 'Tanda Tangan'], rows: peserta.map((x, i) => [String(i + 1), x.nama || '-', x.nip || '-', `${x.jabatanBaru || '-'}${x.unitKerjaBaru ? ' - ' + x.unitKerjaBaru : ''}`, '']) },
+          SP(10),
+          SIGN([{ text: `Bandar Lampung, ${t.tanggalAngka} ${t.bulan} ${t.tahun}` }, { text: (acara.perwiraUpacara && acara.perwiraUpacara.jabatan) || 'Plt. Kepala Bagian Umum,' }, { gap: true }, { text: (acara.perwiraUpacara && acara.perwiraUpacara.nama) || '............', bold: true }]),
+        ] };
+      case 'spmt':
+        return { kop: 'penuh', blocks: [
+          { t: 'title', text: 'SURAT PERNYATAAN MELAKSANAKAN TUGAS' }, P(`NOMOR : ${p.nomorSPMT || '............'}`, { align: 'center' }), SP(6),
+          P('Yang bertanda tangan dibawah ini :', { align: 'left' }),
+          LBL('N a m a', pejabat.nama), LBL('N I P', pejabat.nip), LBL('Pangkat/Gol.Ruang', pejabat.golongan), LBL('J a b a t a n', `${pejabat.jabatan || 'Kepala Kantor Wilayah'}, Kementerian Hukum Lampung`),
+          SP(6), P('Dengan ini menyatakan sesungguhnya bahwa :', { align: 'left' }),
+          LBL('N a m a', p.nama), LBL('N I P', p.nip), LBL('Pangkat/Gol.Ruang', p.golongan), LBL('J a b a t a n', `${p.jabatanBaru || '............'}${p.unitKerjaBaru ? ', ' + p.unitKerjaBaru : ''}`),
+          SP(6),
+          P(`berdasarkan Keputusan Menteri Hukum Republik Indonesia Nomor : ${(acara.skList && acara.skList[0] && acara.skList[0].nomor) || '............'} terhitung mulai tanggal ${t.tanggalAngka || '..'} ${t.bulan} ${t.tahun || ''} telah nyata melaksanakan tugas sebagai ${p.jabatanBaru || '............'}${p.unitKerjaBaru ? ' pada ' + p.unitKerjaBaru : ''}.`),
+          P('Demikian Surat Pernyataan ini saya buat dengan sesungguhnya mengingat Sumpah Jabatan/ Pegawai Negeri Sipil.'),
+          SIGN([{ text: `Bandar Lampung, ${t.tanggalAngka} ${t.bulan} ${t.tahun}` }, { text: `${pejabat.jabatan || 'Kepala Kantor Wilayah'},` }, { gap: true }, { text: pejabat.nama || '............', bold: true }]),
+        ] };
+      case 'spp':
+        return { kop: 'penuh', blocks: [
+          { t: 'title', text: 'SURAT PERNYATAAN PELANTIKAN' }, P(`NOMOR : ${p.nomorSPP || '............'}`, { align: 'center' }), SP(6),
+          P('Yang bertanda tangan dibawah ini :', { align: 'left' }),
+          LBL('N a m a', pejabat.nama), LBL('N I P', pejabat.nip), LBL('Pangkat/Gol.Ruang', pejabat.golongan), LBL('J a b a t a n', `${pejabat.jabatan || 'Kepala Kantor Wilayah'}, Kementerian Hukum Lampung`),
+          SP(6), P('Dengan ini menyatakan sesungguhnya bahwa :', { align: 'left' }),
+          LBL('N a m a', p.nama), LBL('N I P', p.nip), LBL('Pangkat/Gol.Ruang', p.golongan), LBL('J a b a t a n', `${p.jabatanBaru || '............'}${p.unitKerjaBaru ? ', ' + p.unitKerjaBaru : ''}`),
+          SP(6),
+          P(`berdasarkan Keputusan Menteri Hukum Republik Indonesia Nomor : ${(acara.skList && acara.skList[0] && acara.skList[0].nomor) || '............'} telah diangkat dalam Jabatan ${p.jabatanBaru || '............'}${p.unitKerjaBaru ? ' ' + p.unitKerjaBaru : ''} dan telah dilantik oleh ${pejabat.jabatan || 'Kepala Kantor Wilayah'} pada Tanggal ${t.tanggalAngka} ${t.bulan} ${t.tahun}.`),
+          P('Demikian Surat Pernyataan Pelantikan ini saya buat dengan sesungguhnya mengingat Sumpah Jabatan/ Pegawai Negeri Sipil.'),
+          SIGN([{ text: `Bandar Lampung, ${t.tanggalAngka} ${t.bulan} ${t.tahun}` }, { text: `${pejabat.jabatan || 'Kepala Kantor Wilayah'},` }, { gap: true }, { text: pejabat.nama || '............', bold: true }]),
+        ] };
+      default:
+        return { kop: 'penuh', blocks: [P('Pratinjau untuk berkas ini belum tersedia.')] };
+    }
+  }
+
+  function DocPreviewPage({ kode, acara, halaman }) {
+    const { kop, blocks } = useMemo(() => blokPratinjau(kode, acara, halaman || 0), [kode, acara, halaman]);
+    const renderBlok = (b, i) => {
+      if (b.t === 'title') return e('p', { key: i, className: 'doc-preview-title' }, b.text);
+      if (b.t === 'space') return e('div', { key: i, className: 'doc-preview-space', style: { height: b.h || 8 } });
+      if (b.t === 'label') return e('div', { key: i, className: 'doc-preview-label-row' }, e('span', { className: 'lbl' }, b.label), e('span', null, ': ', b.value || '............'));
+      if (b.t === 'note') return e('p', { key: i, className: 'doc-preview-note' }, b.text);
+      if (b.t === 'table') return e(
+        'table', { key: i, className: 'doc-preview-table' },
+        e('thead', null, e('tr', null, b.head.map((h, hi) => e('th', { key: hi }, h)))),
+        e('tbody', null, b.rows.map((row, ri) => e('tr', { key: ri }, row.map((v, ci) => e('td', { key: ci }, v || '-')))))
+      );
+      if (b.t === 'sign') return e(
+        'div', { key: i, className: 'doc-preview-sign' },
+        b.lines.map((ln, li) => ln.gap ? e('div', { key: li, className: 'gap' }) : e('p', { key: li, className: `doc-preview-p right${ln.bold ? ' bold' : ''}`, style: { margin: 0 } }, ln.text))
+      );
+      return e('p', { key: i, className: `doc-preview-p ${b.align || 'justify'}${b.bold ? ' bold' : ''}` }, b.text);
+    };
+    return e(
+      'div', { className: 'doc-preview-page' },
+      kop === 'penuh' && e(
+        'div', null,
+        e('div', { className: 'doc-preview-kop' },
+          e('img', { src: LOGO_DATA_URL, className: 'doc-preview-kop__logo', alt: 'Logo' }),
+          e('div', { className: 'doc-preview-kop__text' },
+            e('p', { className: 'b1' }, 'KEMENTERIAN HUKUM'), e('p', { className: 'b2' }, 'REPUBLIK INDONESIA'), e('p', { className: 'b3' }, 'KANTOR WILAYAH LAMPUNG'),
+            e('p', { className: 'addr' }, 'Jl. RW. Monginsidi No. 184, Bandar Lampung'),
+            e('p', { className: 'addr' }, 'Telp. (0721) 474813 Fax. (0721) 471060, e-mail: lampung.kepegawaian@gmail.com')
+          )
+        ),
+        e('hr', { className: 'doc-preview-hr' })
+      ),
+      kop === 'kecil' && e('div', { className: 'doc-preview-logo-solo' }, e('img', { src: LOGO_DATA_URL, alt: 'Logo' })),
+      kop === 'sampul'
+        ? e('div', { className: 'doc-preview-cover' }, e('img', { src: LOGO_DATA_URL, alt: 'Logo' }), e('div', { className: 'txt' }, blocks.map(renderBlok)))
+        : blocks.map(renderBlok)
+    );
+  }
+
+  /* ============================== RINGKASAN PRATINJAU (SEBELUM UNDUH .DOCX) ==============================
+     Menyusun ringkasan data yang akan masuk ke setiap berkas, supaya admin bisa memeriksa dulu
+     (terutama nomor SPP/SPMT yang berbeda tiap orang) sebelum benar-benar mengunduh file .docx. */
   function ringkasanPratinjau(kode, acara) {
     const t = pecahTanggalAcara(acara.tanggal);
     const peserta = acara.peserta || [];
@@ -5387,27 +5629,43 @@ table { border-collapse: collapse; width: 100%; }
   /* ============================== PANEL UNDUH BERKAS 1-8 (.docx) ============================== */
   /* ============================== PRATINJAU SATU BERKAS (SEBELUM UNDUH) ============================== */
   function BerkasPreviewModal({ item, acara, onClose, onUnduh, sedangUnduh }) {
+    const jumlahPeserta = (acara.peserta && acara.peserta.length) || 1;
+    const berhalamanBanyak = item.kode === 'spmt' || item.kode === 'spp';
+    const [halaman, setHalaman] = useState(0);
     const ringkasan = useMemo(() => ringkasanPratinjau(item.kode, acara), [item.kode, acara]);
     const adaKosong = ringkasan.table && ringkasan.table.rows.some((row) => row.some((v) => v === '' || v === '-' || v === '(belum diisi)'));
+    const namaHalaman = berhalamanBanyak && acara.peserta && acara.peserta[halaman] ? acara.peserta[halaman].nama : null;
     return e(
       Modal,
       { title: `Pratinjau \u2014 ${item.label}`, onClose, wide: true },
       e('p', { style: { fontSize: 12.5, color: 'var(--color-text-muted)', marginBottom: 14 } },
-        'Periksa data di bawah sebelum diunduh. Ini ringkasan isi berkas, bukan tampilan halaman penuh \u2014 tata letak resmi (kop surat, format, dan penomoran) akan terlihat pada file Word setelah diunduh.'),
-      e(
-        'div', { className: 'preview-fields' },
-        ringkasan.fields.map(([label, value], i) => e('div', { key: i, className: 'preview-fields__row' }, e('span', { className: 'preview-fields__label' }, label), e('span', { className: 'preview-fields__value' }, value)))
+        berhalamanBanyak
+          ? `Tampilan mendekati halaman Word sebenarnya \u2014 berkas ini berisi ${jumlahPeserta} halaman (1 per pegawai), geser untuk memeriksa satu-satu.`
+          : 'Tampilan mendekati halaman Word sebenarnya. Sebagian teks disingkat agar muat di layar \u2014 isi lengkap & tata letak persis akan terlihat pada file .docx setelah diunduh.'),
+      berhalamanBanyak && e(
+        'div', { className: 'doc-preview-pager' },
+        e('button', { type: 'button', disabled: halaman === 0, onClick: () => setHalaman((h) => Math.max(0, h - 1)), 'aria-label': 'Halaman sebelumnya' }, e(IconArrowLeft, { size: 14 })),
+        e('span', null, `Halaman ${halaman + 1} dari ${jumlahPeserta}${namaHalaman ? ` \u2014 ${namaHalaman}` : ''}`),
+        e('button', { type: 'button', disabled: halaman >= jumlahPeserta - 1, onClick: () => setHalaman((h) => Math.min(jumlahPeserta - 1, h + 1)), 'aria-label': 'Halaman berikutnya' }, e(IconArrowRight, { size: 14 }))
       ),
-      ringkasan.table && e(
-        'div', { className: 'table-wrap', style: { marginTop: 14 } },
-        e('table', { className: 'data-table' },
-          e('thead', null, e('tr', null, ringkasan.table.head.map((h, i) => e('th', { key: i }, h)))),
-          e('tbody', null, ringkasan.table.rows.length
-            ? ringkasan.table.rows.map((row, ri) => e('tr', { key: ri }, row.map((v, ci) => e('td', { key: ci, 'data-label': ringkasan.table.head[ci] }, v))))
-            : e('tr', null, e('td', { colSpan: ringkasan.table.head.length, style: { textAlign: 'center', color: 'var(--color-text-faint)' } }, 'Belum ada peserta.')))
-        )
+      e('div', { className: 'doc-preview-wrap' }, e(DocPreviewPage, { kode: item.kode, acara, halaman })),
+      e('details', null,
+        e('summary', { style: { fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', cursor: 'pointer', marginBottom: 10 } }, 'Lihat ringkasan data (untuk memeriksa kolom yang masih kosong)'),
+        e(
+          'div', { className: 'preview-fields' },
+          ringkasan.fields.map(([label, value], i) => e('div', { key: i, className: 'preview-fields__row' }, e('span', { className: 'preview-fields__label' }, label), e('span', { className: 'preview-fields__value' }, value)))
+        ),
+        ringkasan.table && e(
+          'div', { className: 'table-wrap', style: { marginTop: 14 } },
+          e('table', { className: 'data-table' },
+            e('thead', null, e('tr', null, ringkasan.table.head.map((h, i) => e('th', { key: i }, h)))),
+            e('tbody', null, ringkasan.table.rows.length
+              ? ringkasan.table.rows.map((row, ri) => e('tr', { key: ri }, row.map((v, ci) => e('td', { key: ci, 'data-label': ringkasan.table.head[ci] }, v))))
+              : e('tr', null, e('td', { colSpan: ringkasan.table.head.length, style: { textAlign: 'center', color: 'var(--color-text-faint)' } }, 'Belum ada peserta.')))
+          )
+        ),
+        ringkasan.catatan && e('div', { className: 'import-note', style: { marginTop: 14 } }, ringkasan.catatan)
       ),
-      ringkasan.catatan && e('div', { className: 'import-note', style: { marginTop: 14 } }, ringkasan.catatan),
       adaKosong && e('div', { className: 'login-error', style: { marginTop: 10 } }, 'Ada data yang masih kosong pada tabel di atas \u2014 berkas tetap bisa diunduh, tapi sebaiknya dilengkapi dulu supaya tidak ada bagian kosong di dokumen.'),
       e(
         'div', { style: { display: 'flex', gap: 10, marginTop: 20 } },
