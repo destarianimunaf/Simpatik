@@ -259,21 +259,116 @@ table { border-collapse: collapse; width: 100%; }
 .badge-danger { background: var(--color-danger-soft); color: var(--color-danger); }
 .badge-info { background: var(--color-info-soft); color: var(--color-info); }
 
+/* ===== Dashboard: hero sambutan ===== */
+@keyframes dashFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes dashBlobFloat { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-14px, 12px) scale(1.08); } }
+@keyframes dashBlobFloat2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(10px, -10px) scale(1.05); } }
+@keyframes dashSparklePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(1.15); } }
+@keyframes dashPingRing { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(2.1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .dash-hero::before, .dash-hero::after, .dash-hero__eyebrow svg, .activity-dot--live::after { animation: none !important; }
+  .dash-anim { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+.dash-hero {
+  position: relative; overflow: hidden; border-radius: var(--radius-lg); margin-bottom: 20px;
+  padding: 26px 28px; color: #fff;
+  background: linear-gradient(135deg, var(--color-maroon) 0%, var(--color-maroon-dark) 65%, #3d0c18 100%);
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  animation: dashFadeUp .5s ease both;
+}
+.dash-hero::before {
+  content: ''; position: absolute; top: -60px; right: -40px; width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,162,39,0.35), transparent 70%);
+  animation: dashBlobFloat 9s ease-in-out infinite;
+}
+.dash-hero::after {
+  content: ''; position: absolute; bottom: -80px; right: 120px; width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);
+  animation: dashBlobFloat2 11s ease-in-out infinite;
+}
+.dash-hero__main { position: relative; z-index: 1; max-width: 60ch; }
+.dash-hero__eyebrow {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; background: rgba(255,255,255,0.14); color: var(--color-gold);
+  padding: 5px 12px; border-radius: 999px; margin-bottom: 12px;
+}
+.dash-hero__eyebrow svg { animation: dashSparklePulse 2.4s ease-in-out infinite; }
+.dash-hero h1 { margin: 0 0 6px; font-size: 22px; font-weight: 800; }
+.dash-hero p { margin: 0; opacity: 0.85; font-size: 13px; line-height: 1.5; }
+.dash-hero__actions { position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap; flex-shrink: 0; }
+.dash-hero__actions .btn-primary { background: var(--color-gold); color: #3a2c05; border-color: var(--color-gold); }
+.dash-hero__actions .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.dash-hero__actions .btn-ghost {
+  background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.35);
+}
+.dash-hero__actions .btn-ghost:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+.dash-hero__actions .btn { transition: transform .15s ease, filter .15s ease, background .15s ease; }
+@media (max-width: 640px) { .dash-hero { padding: 20px; } .dash-hero__actions { width: 100%; } .dash-hero__actions .btn { flex: 1 1 auto; justify-content: center; } }
+
+/* ===== Dashboard: aksi cepat ===== */
+.quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+@media (max-width: 900px) { .quick-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .quick-grid { grid-template-columns: 1fr; } }
+.quick-tile {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius-md);
+  background: var(--color-surface); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);
+  text-decoration: none; color: var(--color-text); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  animation: dashFadeUp .45s ease both;
+}
+.quick-tile:hover { transform: translateY(-3px) scale(1.015); box-shadow: var(--shadow-md); border-color: var(--color-primary); }
+.quick-tile:hover .quick-tile__icon { transform: scale(1.1) rotate(-4deg); }
+.quick-tile__icon {
+  width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; background: var(--color-primary-soft); color: var(--color-primary-dark);
+  transition: transform .2s ease;
+}
+.quick-tile__label { font-size: 13px; font-weight: 700; }
+.quick-tile__sub { font-size: 11px; color: var(--color-text-faint); margin-top: 1px; }
+
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
 @media (max-width: 1100px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .stat-grid { grid-template-columns: 1fr; } }
 
-.stat-card { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.stat-card {
+  padding: 20px; display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden;
+  transition: transform .15s ease, box-shadow .15s ease;
+  animation: dashFadeUp .5s ease both;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--stat-accent, var(--color-primary));
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.stat-card:hover .stat-card__icon { transform: scale(1.08); }
 .stat-card__top { display: flex; align-items: center; justify-content: space-between; }
-.stat-card__icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-.stat-card__value { font-size: 24px; font-weight: 800; }
+.stat-card__icon {
+  width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02); transition: transform .2s ease;
+}
+.stat-card__value { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .stat-card__label { font-size: 12.5px; color: var(--color-text-muted); }
-.stat-card__delta { font-size: 11.5px; font-weight: 700; display: flex; align-items: center; gap: 3px; }
-.stat-card__delta.up { color: var(--color-success); }
-.stat-card__delta.down { color: var(--color-danger); }
+.stat-card__delta { font-size: 11.5px; font-weight: 700; display: flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 999px; }
+.stat-card__delta.up { color: var(--color-success); background: var(--color-success-soft); }
+.stat-card__delta.down { color: var(--color-danger); background: var(--color-danger-soft); }
 
 .content-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
 @media (max-width: 960px) { .content-grid { grid-template-columns: 1fr; } }
+.content-grid > .card { animation: dashFadeUp .55s ease both; animation-delay: .12s; }
+
+.dash-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+.dash-link {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--color-primary-dark);
+  text-decoration: none; white-space: nowrap; flex-shrink: 0; padding: 4px 2px; transition: gap .15s ease;
+}
+.dash-link:hover { text-decoration: underline; gap: 7px; }
+
+.activity-dot--live { position: relative; }
+.activity-dot--live::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--color-success);
+  animation: dashPingRing 1.8s ease-out infinite;
+}
+
 
 .data-table th {
   text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
@@ -318,9 +413,13 @@ table { border-collapse: collapse; width: 100%; }
 .pegawai-combo__nama { font-size: 12.5px; font-weight: 600; color: var(--color-text); }
 .pegawai-combo__jabatan { font-size: 11px; color: var(--color-text-muted); }
 
-.activity-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
-.activity-item:last-child { border-bottom: none; }
-.activity-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.activity-item { position: relative; display: flex; gap: 12px; padding: 0 0 20px 0; animation: dashFadeUp .4s ease both; }
+.activity-item:last-child { padding-bottom: 0; }
+.activity-item::before {
+  content: ''; position: absolute; left: 14px; top: 30px; bottom: -4px; width: 1px; background: var(--color-border);
+}
+.activity-item:last-child::before { display: none; }
+.activity-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; }
 .activity-text { font-size: 12.5px; line-height: 1.4; }
 .activity-time { font-size: 11px; color: var(--color-text-faint); margin-top: 2px; }
 
@@ -639,11 +738,12 @@ table { border-collapse: collapse; width: 100%; }
   padding: 4px 10px; border-radius: 999px;
 }
 .peserta-row {
-  display: grid; grid-template-columns: 1.3fr 1.1fr 0.8fr 1fr 1.1fr 0.9fr auto; gap: 8px; align-items: center;
+  display: grid; grid-template-columns: 1.2fr 1fr 0.75fr 0.85fr 1fr 0.95fr 0.85fr 0.85fr auto; gap: 8px; align-items: center;
   padding: 8px 0; border-bottom: 1px dashed var(--color-border);
 }
+.peserta-row--head { font-size: 10.5px; font-weight: 700; color: var(--color-text-faint); text-transform: uppercase; letter-spacing: .02em; padding-bottom: 6px; }
 .peserta-row:last-child { border-bottom: none; }
-@media (max-width: 720px) { .peserta-row { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .peserta-row { grid-template-columns: 1fr; } .peserta-row--head { display: none; } }
 .berkas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-top: 14px; }
 .berkas-item {
   border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px;
@@ -655,6 +755,12 @@ table { border-collapse: collapse; width: 100%; }
 }
 .berkas-item__title { font-size: 13px; font-weight: 700; margin: 0; }
 .berkas-item__desc { font-size: 11.5px; color: var(--color-text-muted); flex: 1; margin: 0; }
+
+/* ===== Pratinjau berkas (sebelum unduh .docx) ===== */
+.preview-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px 20px; }
+.preview-fields__row { display: flex; flex-direction: column; gap: 2px; padding-bottom: 8px; border-bottom: 1px dashed var(--color-border); }
+.preview-fields__label { font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .02em; }
+.preview-fields__value { font-size: 13px; color: var(--color-text); word-break: break-word; }
 
 /* ===== Kalender jadwal ruang (ala jadwal piket) ===== */
 .jadwal-piket th { text-align: center; white-space: nowrap; }
@@ -890,6 +996,13 @@ table { border-collapse: collapse; width: 100%; }
   const IconArrowDown = svgIcon([
     e('line', { key: 1, x1: 7, y1: 7, x2: 17, y2: 17 }),
     e('polyline', { key: 2, points: '17 7 17 17 7 17' }),
+  ]);
+  const IconArrowRight = svgIcon([
+    e('line', { key: 1, x1: 5, y1: 12, x2: 19, y2: 12 }),
+    e('polyline', { key: 2, points: '12 5 19 12 12 19' }),
+  ]);
+  const IconSparkles = svgIcon([
+    e('path', { key: 1, d: 'M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8' }),
   ]);
   const IconLogOut = svgIcon([
     e('path', { key: 1, d: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' }),
@@ -1712,30 +1825,53 @@ table { border-collapse: collapse; width: 100%; }
     return e('span', { className: `badge ${cls}` }, status);
   }
 
-  function StatCard({ icon: IconComp, label, value, delta, direction = 'up', tone = 'primary' }) {
+  function AnimatedNumber({ value }) {
+    const str = String(value == null ? '' : value);
+    const match = str.match(/^(\D*)(\d+)(\D*)$/);
+    const [tampil, setTampil] = useState(match ? 0 : str);
+    useEffect(() => {
+      if (!match) { setTampil(str); return; }
+      const target = parseInt(match[2], 10);
+      const durasi = 700;
+      const mulai = performance.now();
+      let frame;
+      function tick(sekarang) {
+        const t = Math.min(1, (sekarang - mulai) / durasi);
+        const ease = 1 - Math.pow(1 - t, 3);
+        setTampil(Math.round(target * ease));
+        if (t < 1) frame = requestAnimationFrame(tick);
+      }
+      frame = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(frame);
+    }, [str]);
+    if (!match) return e('span', null, tampil);
+    return e('span', null, `${match[1]}${tampil}${match[3]}`);
+  }
+
+  function StatCard({ icon: IconComp, label, value, delta, direction = 'up', tone = 'primary', style }) {
     const toneMap = {
-      primary: ['var(--color-primary-soft)', 'var(--color-primary-dark)'],
-      success: ['var(--color-success-soft)', 'var(--color-success)'],
-      warning: ['var(--color-warning-soft)', 'var(--color-warning)'],
-      info: ['var(--color-info-soft)', 'var(--color-info)'],
+      primary: ['var(--color-primary-soft)', 'var(--color-primary-dark)', 'var(--color-primary)'],
+      success: ['var(--color-success-soft)', 'var(--color-success)', 'var(--color-success)'],
+      warning: ['var(--color-warning-soft)', 'var(--color-warning)', 'var(--color-warning)'],
+      info: ['var(--color-info-soft)', 'var(--color-info)', 'var(--color-info)'],
     };
-    const [bg, fg] = toneMap[tone] || toneMap.primary;
+    const [bg, fg, accent] = toneMap[tone] || toneMap.primary;
     return e(
       'div',
-      { className: 'card stat-card' },
+      { className: 'card stat-card', style: { '--stat-accent': accent, ...style } },
       e(
         'div',
         { className: 'stat-card__top' },
-        e('div', { className: 'stat-card__icon', style: { background: bg, color: fg } }, e(IconComp, { size: 18 })),
+        e('div', { className: 'stat-card__icon', style: { background: bg, color: fg } }, e(IconComp, { size: 19 })),
         delta &&
           e(
             'span',
             { className: `stat-card__delta ${direction}` },
-            e(direction === 'up' ? IconArrowUp : IconArrowDown, { size: 14 }),
+            e(direction === 'up' ? IconArrowUp : IconArrowDown, { size: 13 }),
             delta
           )
       ),
-      e('div', { className: 'stat-card__value' }, value),
+      e('div', { className: 'stat-card__value' }, e(AnimatedNumber, { value })),
       e('div', { className: 'stat-card__label' }, label)
     );
   }
@@ -1747,6 +1883,11 @@ table { border-collapse: collapse; width: 100%; }
   /* ============================== FORM PEGAWAI (TAMBAH/EDIT) ============================== */
   function fieldStyle() {
     return { fontSize: 12.5, fontWeight: 600, display: 'block', marginBottom: 6 };
+  }
+  // Label field wajib diisi (dipakai di form Acara Pelantikan) -- tanda * merah supaya jelas
+  // field mana saja yang harus terisi sebelum berkas pelantikan bisa dibuat/diunduh.
+  function labelWajib(teks) {
+    return e('label', { style: fieldStyle() }, teks, e('span', { style: { color: 'var(--color-danger)' } }, ' *'));
   }
 
   /* ============================== INPUT NAMA PEGAWAI YANG BISA DICARI (COMBOBOX) ==============================
@@ -2204,28 +2345,54 @@ table { border-collapse: collapse; width: 100%; }
       info: ['var(--color-info-soft)', 'var(--color-info)'],
       warning: ['var(--color-warning-soft)', 'var(--color-warning)'],
     };
+    const jam = new Date().getHours();
+    const sapaan = jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 19 ? 'Selamat sore' : 'Selamat malam';
+    const tanggalHariIni = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const quickActions = [
+      { href: '#/kepegawaian/data-pegawai', icon: IconUserPlus, label: 'Tambah Pegawai', sub: 'Data pegawai baru', tone: 'primary' },
+      { href: '#/kepegawaian/pelantikan', icon: IconFlag, label: 'Persiapan Pelantikan', sub: 'Jadwal & berkas', tone: 'success' },
+      { href: '#/kepegawaian/cuti', icon: IconCalendar, label: 'Cuti Pegawai', sub: 'Ajukan / kelola', tone: 'warning' },
+      { href: '#/simoris', icon: IconFiles, label: 'Buka SIMORIS', sub: 'Persuratan online', tone: 'info' },
+    ];
 
     return e(
       'div',
       null,
       e(
         'div',
-        { className: 'page-header' },
+        { className: 'dash-hero' },
         e(
           'div',
-          null,
-          e('h1', null, 'Selamat datang, Admin \u{1F44B}'),
-          e('p', null, 'Ringkasan data kepegawaian Kanwil Kemenkum Lampung hari ini.')
+          { className: 'dash-hero__main' },
+          e('span', { className: 'dash-hero__eyebrow' }, e(IconSparkles, { size: 12 }), tanggalHariIni),
+          e('h1', null, `${sapaan}, Admin \u{1F44B}`),
+          e('p', null, 'Ringkasan data kepegawaian Kantor Wilayah Kementerian Hukum Lampung hari ini \u2014 pantau pegawai, cuti, kepangkatan, dan pelantikan dalam satu layar.')
         ),
-        e('a', { href: '#/simoris', className: 'btn btn-primary' }, e(IconFiles, { size: 16 }), 'Buka SIMORIS')
+        e(
+          'div',
+          { className: 'dash-hero__actions' },
+          e('a', { href: '#/simoris', className: 'btn btn-primary' }, e(IconFiles, { size: 15 }), 'Buka SIMORIS'),
+          e('a', { href: '#/kepegawaian/pelantikan', className: 'btn btn-ghost' }, e(IconFlag, { size: 15 }), 'Persiapan Pelantikan')
+        )
+      ),
+      e(
+        'div',
+        { className: 'quick-grid' },
+        quickActions.map((q, i) =>
+          e(
+            'a', { key: i, href: q.href, className: 'quick-tile', style: { animationDelay: `${i * 60}ms` } },
+            e('div', { className: 'quick-tile__icon', style: { background: toneColor[q.tone][0], color: toneColor[q.tone][1] } }, e(q.icon, { size: 18 })),
+            e('div', null, e('div', { className: 'quick-tile__label' }, q.label), e('div', { className: 'quick-tile__sub' }, q.sub))
+          )
+        )
       ),
       e(
         'div',
         { className: 'stat-grid' },
-        e(StatCard, { icon: IconUsers, label: 'Total Pegawai', value: String(pegawai.length), delta: '+3 bulan ini', direction: 'up', tone: 'primary' }),
-        e(StatCard, { icon: IconUserCheck, label: 'Pegawai Aktif Hari Ini', value: '171', delta: '92% kehadiran', direction: 'up', tone: 'success' }),
-        e(StatCard, { icon: IconCalendar, label: 'Pengajuan Cuti', value: '7', delta: '4 menunggu', direction: 'down', tone: 'warning' }),
-        e(StatCard, { icon: IconTrending, label: 'Usulan Kenaikan Pangkat', value: '12', delta: 'periode Okt 2026', direction: 'up', tone: 'info' })
+        e(StatCard, { icon: IconUsers, label: 'Total Pegawai', value: String(pegawai.length), delta: '+3 bulan ini', direction: 'up', tone: 'primary', style: { animationDelay: '0ms' } }),
+        e(StatCard, { icon: IconUserCheck, label: 'Pegawai Aktif Hari Ini', value: '171', delta: '92% kehadiran', direction: 'up', tone: 'success', style: { animationDelay: '70ms' } }),
+        e(StatCard, { icon: IconCalendar, label: 'Pengajuan Cuti', value: '7', delta: '4 menunggu', direction: 'down', tone: 'warning', style: { animationDelay: '140ms' } }),
+        e(StatCard, { icon: IconTrending, label: 'Usulan Kenaikan Pangkat', value: '12', delta: 'periode Okt 2026', direction: 'up', tone: 'info', style: { animationDelay: '210ms' } })
       ),
       e(
         'div',
@@ -2233,8 +2400,11 @@ table { border-collapse: collapse; width: 100%; }
         e(
           'div',
           { className: 'card card-pad' },
-          e('div', { className: 'section-title' }, 'Pegawai Terbaru Diperbarui'),
-          e('div', { className: 'section-subtitle' }, 'Data yang baru saja diperbarui di sistem kepegawaian'),
+          e(
+            'div', { className: 'dash-card-head' },
+            e('div', null, e('div', { className: 'section-title' }, 'Pegawai Terbaru Diperbarui'), e('div', { className: 'section-subtitle' }, 'Data yang baru saja diperbarui di sistem kepegawaian')),
+            e('a', { href: '#/kepegawaian/data-pegawai', className: 'dash-link' }, 'Lihat semua', e(IconArrowRight, { size: 13 }))
+          ),
           e(
             'div',
             { className: 'table-wrap', style: { marginTop: 14 } },
@@ -2245,30 +2415,32 @@ table { border-collapse: collapse; width: 100%; }
               e(
                 'tbody',
                 null,
-                terbaru.map((p, i) =>
-                  e(
-                    'tr',
-                    { key: i },
-                    e(
-                      'td',
-                      null,
+                terbaru.length
+                  ? terbaru.map((p, i) =>
                       e(
-                        'div',
-                        { className: 'name-cell' },
-                        e(AvatarChip, { nama: p.nama }),
+                        'tr',
+                        { key: i },
                         e(
-                          'div',
-                          null,
-                          e('div', { style: { fontWeight: 600 } }, p.nama),
-                          e('div', { style: { fontSize: 11.5, color: 'var(--color-text-faint)' } }, p.nip)
-                        )
+                          'td',
+                          { 'data-label': 'Nama' },
+                          e(
+                            'div',
+                            { className: 'name-cell' },
+                            e(AvatarChip, { nama: p.nama }),
+                            e(
+                              'div',
+                              null,
+                              e('div', { style: { fontWeight: 600 } }, p.nama),
+                              e('div', { style: { fontSize: 11.5, color: 'var(--color-text-faint)' } }, p.nip)
+                            )
+                          )
+                        ),
+                        e('td', { 'data-label': 'Jabatan' }, p.jabatan),
+                        e('td', { 'data-label': 'Golongan' }, p.golongan),
+                        e('td', { 'data-label': 'Status' }, e(Badge, { status: p.status }))
                       )
-                    ),
-                    e('td', null, p.jabatan),
-                    e('td', null, p.golongan),
-                    e('td', null, e(Badge, { status: p.status }))
-                  )
-                )
+                    )
+                  : e('tr', null, e('td', { colSpan: 4, style: { textAlign: 'center', padding: 28, color: 'var(--color-text-faint)' } }, 'Belum ada data pegawai.'))
               )
             )
           )
@@ -2280,13 +2452,13 @@ table { border-collapse: collapse; width: 100%; }
           e('div', { className: 'section-subtitle' }, 'Riwayat kegiatan terbaru di sistem'),
           e(
             'div',
-            { style: { marginTop: 10 } },
+            { style: { marginTop: 16 } },
             aktivitas.map((a, i) => {
               const [bg, fg] = toneColor[a.tone];
               return e(
                 'div',
-                { className: 'activity-item', key: i },
-                e('div', { className: 'activity-dot', style: { background: bg, color: fg } }, e(a.icon, { size: 15 })),
+                { className: 'activity-item', key: i, style: { animationDelay: `${220 + i * 70}ms` } },
+                e('div', { className: `activity-dot${i === 0 ? ' activity-dot--live' : ''}`, style: { background: bg, color: fg } }, e(a.icon, { size: 15 })),
                 e(
                   'div',
                   null,
@@ -4700,8 +4872,59 @@ table { border-collapse: collapse; width: 100%; }
     return _dokumen(children);
   }
 
-  /* ---- SPMT & SPP: satu berkas berisi 1 halaman per pegawai yang dilantik, mengikuti format
-     resmi Kanwil (kop surat sama seperti lembar 1-8, nomor surat opsional dari form Acara) ---- */
+  /* ---- Undangan/Panggilan Pelantikan: SATU surat untuk seluruh peserta, dengan daftar nama
+     dilampirkan sebagai tabel (bukan satu surat per orang). Cocok dipakai baik sebagai undangan
+     ke saksi/pejabat lain, maupun sebagai panggilan resmi ke pegawai yang akan dilantik --
+     redaksinya cukup umum untuk kedua keperluan itu. ---- */
+  function buildUndanganPelantikan(acara) {
+    const { Document, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle } = _docxLib();
+    const t = pecahTanggalAcara(acara.tanggal);
+    const jabatanPejabat = (acara.pejabatPelantik && acara.pejabatPelantik.jabatan) || 'Kepala Kantor Wilayah Kementerian Hukum Lampung';
+    const namaPejabat = (acara.pejabatPelantik && acara.pejabatPelantik.nama) || '............';
+    const peserta = (acara.peserta && acara.peserta.length) ? acara.peserta : [{ nama: '............', jabatanBaru: '............', unitKerjaBaru: '' }];
+    const border = { style: BorderStyle.SINGLE, size: 4, color: '000000' };
+    const cellBorders = { top: border, bottom: border, left: border, right: border };
+    const headCell = (text, width) => new TableCell({ width: { size: width, type: WidthType.PERCENTAGE }, borders: cellBorders, margins: { top: 60, bottom: 60, left: 80, right: 80 }, children: [teks(text, { align: AlignmentType.CENTER, bold: true, after: 0 })] });
+    const rows = [new TableRow({ children: [headCell('No', 6), headCell('Nama', 34), headCell('Jabatan Baru', 40), headCell('Unit Kerja', 20)] })];
+    peserta.forEach((p, i) => {
+      rows.push(new TableRow({ children: [
+        new TableCell({ width: { size: 6, type: WidthType.PERCENTAGE }, borders: cellBorders, margins: { top: 60, bottom: 60, left: 80, right: 80 }, children: [teks(String(i + 1), { align: AlignmentType.CENTER, after: 0 })] }),
+        new TableCell({ width: { size: 34, type: WidthType.PERCENTAGE }, borders: cellBorders, margins: { top: 60, bottom: 60, left: 80, right: 80 }, children: [teks(p.nama || '-', { after: 0 })] }),
+        new TableCell({ width: { size: 40, type: WidthType.PERCENTAGE }, borders: cellBorders, margins: { top: 60, bottom: 60, left: 80, right: 80 }, children: [teks(p.jabatanBaru || '-', { after: 0 })] }),
+        new TableCell({ width: { size: 20, type: WidthType.PERCENTAGE }, borders: cellBorders, margins: { top: 60, bottom: 60, left: 80, right: 80 }, children: [teks(p.unitKerjaBaru || '-', { after: 0 })] }),
+      ] }));
+    });
+    const children = [
+      ...kopSurat(),
+      new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { after: 160 }, children: [new TextRun({ text: `Bandar Lampung, ${t.tanggalAngka} ${t.bulan} ${t.tahun}`, size: 22, font: 'Arial' })] }),
+      baris2Kolom('Nomor', acara.nomorUndangan || '............'),
+      baris2Kolom('Sifat', 'Penting'),
+      baris2Kolom('Lampiran', '1 (satu) lembar daftar nama'),
+      baris2Kolom('Hal', 'Undangan/Panggilan Pelantikan dan Pengambilan Sumpah Jabatan'),
+      kosong(160),
+      teks('Yth. Pejabat/Pegawai sebagaimana daftar nama terlampir', { after: 0 }),
+      teks('di tempat', { after: 200 }),
+      teks(
+        `Sehubungan dengan akan dilaksanakannya pelantikan dan pengambilan sumpah jabatan di lingkungan Kantor Wilayah Kementerian Hukum Lampung, dengan ini kami mengundang/memanggil Saudara-Saudara sebagaimana daftar nama terlampir untuk hadir pada:`,
+        { after: 160 }
+      ),
+      baris2Kolom('Hari, Tanggal', t.formatPanjang),
+      baris2Kolom('Waktu', `Pukul ${acara.waktu || '............'} WIB s.d. selesai`),
+      baris2Kolom('Tempat', acara.tempat || '............'),
+      baris2Kolom('Pakaian', 'Pakaian Sipil Lengkap (PSL)'),
+      kosong(160),
+      teks('Mengingat pentingnya acara tersebut, dimohon kehadiran Saudara-Saudara tepat waktu. Demikian undangan/panggilan ini disampaikan, atas perhatian dan kehadirannya diucapkan terima kasih.', { after: 260 }),
+      teks(`${jabatanPejabat},`, { align: AlignmentType.RIGHT, after: 700 }),
+      teks(namaPejabat, { align: AlignmentType.RIGHT, bold: true, after: 0 }),
+      new Paragraph({ text: '', pageBreakBefore: true }),
+      judul('LAMPIRAN: DAFTAR NAMA', { size: 22, after: 10 }),
+      teks('Undangan/Panggilan Pelantikan dan Pengambilan Sumpah Jabatan', { align: AlignmentType.CENTER, after: 200 }),
+      new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, borders: cellBorders, rows }),
+    ];
+    return _dokumen(children);
+  }
+
+  /* Baris "Label : Isi" bergaya surat dinas (dipakai Undangan/Panggilan, SPMT, SPP). */
   function baris2Kolom(label, isi) {
     const { Paragraph, TextRun } = _docxLib();
     return new Paragraph({
@@ -4797,7 +5020,99 @@ table { border-collapse: collapse; width: 100%; }
     return _dokumen(children);
   }
 
+  /* ============================== RINGKASAN PRATINJAU (SEBELUM UNDUH .DOCX) ==============================
+     Menyusun ringkasan data yang akan masuk ke setiap berkas, supaya admin bisa memeriksa dulu
+     (terutama nomor SPP/SPMT yang berbeda tiap orang) sebelum benar-benar mengunduh file .docx. */
+  function fmtTglIndo(iso) {
+    if (!iso) return '-';
+    return new Date(`${iso}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+  function ringkasanPratinjau(kode, acara) {
+    const t = pecahTanggalAcara(acara.tanggal);
+    const peserta = acara.peserta || [];
+    switch (kode) {
+      case 'undangan':
+        return {
+          fields: [
+            ['Nomor Surat', acara.nomorUndangan || '-'],
+            ['Hari, Tanggal', t.formatPanjang],
+            ['Waktu', `${acara.waktu || '-'} WIB`],
+            ['Tempat', acara.tempat || '-'],
+          ],
+          table: { head: ['No', 'Nama', 'Jabatan Baru', 'Unit Kerja'], rows: peserta.map((p, i) => [i + 1, p.nama || '-', p.jabatanBaru || '-', p.unitKerjaBaru || '-']) },
+          catatan: 'Satu surat untuk semua peserta \u2014 daftar nama di bawah menjadi lampirannya, bukan surat terpisah per orang.',
+        };
+      case 'lembar-1':
+        return {
+          fields: [
+            ['Hari, Tanggal', t.formatPanjang],
+            ['Pejabat Pelantik', `${(acara.pejabatPelantik && acara.pejabatPelantik.nama) || '-'} \u2014 ${(acara.pejabatPelantik && acara.pejabatPelantik.jabatan) || '-'}`],
+          ],
+          table: null,
+          catatan: 'Naskah pelantikan berupa teks baku (tidak menyebut nama satu-satu); nama peserta ada pada Keputusan Menteri (SK).',
+        };
+      case 'lembar-2':
+        return { fields: [['Hari, Tanggal', t.formatPanjang]], table: null, catatan: 'Naskah sumpah jabatan baku sesuai peraturan \u2014 tidak ada data yang perlu disesuaikan.' };
+      case 'lembar-3':
+        return {
+          fields: [
+            ['Nomor SK', (acara.skList || []).map((s) => `${s.nomor || '-'}${s.tanggal ? ' (' + fmtTglIndo(s.tanggal) + ')' : ''}`).join('; ') || '-'],
+            ['Tentang', acara.skTentang || '-'],
+            ['Ditetapkan di', acara.tempatPenetapanSK || '-'],
+            ['Penandatangan (a.n. Menteri)', `${(acara.penandatanganSK && acara.penandatanganSK.nama) || '-'} \u2014 ${(acara.penandatanganSK && acara.penandatanganSK.jabatan) || '-'}`],
+          ],
+          table: { head: ['No', 'Nama', 'Jabatan Baru', 'Unit Kerja'], rows: peserta.map((p, i) => [i + 1, p.nama || '-', p.jabatanBaru || '-', p.unitKerjaBaru || '-']) },
+          catatan: 'Tabel "MENGANGKAT" pada SK akan memuat seluruh baris peserta di atas secara otomatis.',
+        };
+      case 'lembar-4-5':
+        return {
+          fields: [
+            ['Hari, Tanggal', t.formatPanjang], ['Waktu', `${acara.waktu || '-'} WIB`], ['Tempat', acara.tempat || '-'],
+            ['Pejabat Pelantik', (acara.pejabatPelantik && acara.pejabatPelantik.nama) || '-'],
+            ['Kepala Kantor Wilayah', (acara.kepalaKantorWilayah && acara.kepalaKantorWilayah.nama) || '-'],
+            ['Rohaniwan', acara.rohaniwan || '-'],
+            ['Perwira Upacara', (acara.perwiraUpacara && acara.perwiraUpacara.nama) || '-'],
+          ],
+          table: null,
+          catatan: 'Rundown 2 halaman (lembar 4 dan 5) diunduh sebagai satu berkas dengan pemisah halaman otomatis.',
+        };
+      case 'lembar-6':
+        return {
+          fields: [
+            ['Hari, Tanggal', t.formatPanjang], ['Waktu', `${acara.waktu || '-'} WIB`], ['Tempat', acara.tempat || '-'],
+            ['Penanggung Jawab', (acara.perwiraUpacara && acara.perwiraUpacara.jabatan) || '-'],
+            ['MC', acara.petugas.mc || '-'], ['Pembaca SK', acara.petugas.pembacaSK || '-'], ['Dirigen', acara.petugas.dirigen || '-'],
+            ['Protokoler', acara.petugas.protokoler || '-'], ['Pembawa Baki', acara.petugas.pembawaBaki || '-'], ['Perlengkapan', acara.petugas.perlengkapan || '-'],
+          ],
+          table: null, catatan: '',
+        };
+      case 'lembar-7':
+        return { fields: [['Judul', 'Pelantikan dan Pengambilan Sumpah Jabatan Fungsional'], ['Bulan, Tahun', acara.tanggal ? `${t.bulan} ${t.tahun}` : '-']], table: null, catatan: '' };
+      case 'lembar-8':
+        return {
+          fields: [['Hari, Tanggal', t.formatPanjang], ['Tempat', acara.tempat || '-']],
+          table: { head: ['No', 'Nama', 'NIP', 'Jabatan Baru'], rows: peserta.map((p, i) => [i + 1, p.nama || '-', p.nip || '-', p.jabatanBaru || '-']) },
+          catatan: 'Kolom tanda tangan dikosongkan untuk diisi manual saat acara berlangsung.',
+        };
+      case 'spmt':
+        return {
+          fields: [['Jumlah Halaman', `${peserta.length || 1} halaman (1 halaman per pegawai)`]],
+          table: { head: ['No', 'Nama', 'NIP', 'No. SPMT', 'Jabatan Baru'], rows: peserta.map((p, i) => [i + 1, p.nama || '-', p.nip || '-', p.nomorSPMT || '(belum diisi)', p.jabatanBaru || '-']) },
+          catatan: 'Periksa kolom "No. SPMT" \u2014 nomornya berbeda untuk tiap pegawai, pastikan tidak ada yang kosong atau tertukar.',
+        };
+      case 'spp':
+        return {
+          fields: [['Jumlah Halaman', `${peserta.length || 1} halaman (1 halaman per pegawai)`]],
+          table: { head: ['No', 'Nama', 'NIP', 'No. SPP', 'Jabatan Baru'], rows: peserta.map((p, i) => [i + 1, p.nama || '-', p.nip || '-', p.nomorSPP || '(belum diisi)', p.jabatanBaru || '-']) },
+          catatan: 'Periksa kolom "No. SPP" \u2014 nomornya berbeda untuk tiap pegawai, pastikan tidak ada yang kosong atau tertukar.',
+        };
+      default:
+        return { fields: [], table: null, catatan: '' };
+    }
+  }
+
   const BERKAS_PELANTIKAN_TYPES = [
+    { id: 0, kode: 'undangan', label: 'Undangan/Panggilan Pelantikan', desc: 'Satu surat untuk semua peserta, dengan daftar nama dilampirkan (bukan satu surat per orang).', build: buildUndanganPelantikan, file: 'Undangan-Panggilan Pelantikan' },
     { id: 1, kode: 'lembar-1', label: 'Naskah Pelantikan', desc: 'Teks pelantikan yang dibacakan pejabat pelantik (lembar I).', build: buildLembar1NaskahPelantikan, file: 'Lembar 1 - Naskah Pelantikan' },
     { id: 2, kode: 'lembar-2', label: 'Naskah Sumpah Jabatan', desc: 'Teks sumpah jabatan yang diikuti pejabat yang dilantik (lembar II).', build: buildLembar2NaskahSumpah, file: 'Lembar 2 - Naskah Sumpah Jabatan' },
     { id: 3, kode: 'lembar-3', label: 'Keputusan Menteri (SK Pengangkatan)', desc: 'SK pengangkatan jabatan fungsional, memuat tabel seluruh pegawai yang dilantik.', build: buildLembar3SK, file: 'Lembar 3 - Keputusan Menteri' },
@@ -4886,6 +5201,7 @@ table { border-collapse: collapse; width: 100%; }
       penandatanganSK: { nama: '', nip: '', jabatan: 'Kepala Biro Kepegawaian' },
       perwiraUpacara: { nama: '', nip: '', jabatan: 'Plt. Kepala Bagian Umum' },
       rohaniwan: '',
+      nomorUndangan: '',
       undangan: 'Para Pimpinan Tinggi Pratama\nPejabat Administrasi (eselon III) dan Pengawas, JFT dan JFU',
       petugas: { mc: '', pembacaSK: '', dirigen: '', protokoler: '', pembawaBaki: '', perlengkapan: '' },
       peserta: [],
@@ -4954,6 +5270,8 @@ table { border-collapse: collapse; width: 100%; }
     function handleSubmit(ev) {
       ev.preventDefault();
       if (!form.tanggal || !form.tempat.trim()) { setError('Tanggal dan tempat acara wajib diisi.'); return; }
+      if (!form.pejabatPelantik.nama.trim() || !form.pejabatPelantik.jabatan.trim()) { setError('Nama dan jabatan pejabat pelantik wajib diisi.'); return; }
+      if (!form.skList.length || !form.skList[0].nomor.trim()) { setError('Nomor SK pengangkatan (minimal satu) wajib diisi.'); return; }
       if (!form.peserta.length) { setError('Tambahkan minimal 1 pegawai yang akan dilantik.'); return; }
       if (form.peserta.some((p) => !p.nama.trim() || !p.jabatanBaru.trim())) { setError('Nama dan jabatan baru setiap peserta wajib diisi.'); return; }
       onSave(form, initial || null);
@@ -4971,15 +5289,16 @@ table { border-collapse: collapse; width: 100%; }
         e(
           'div',
           { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 14 } },
-          e('div', null, e('label', { style: fieldStyle() }, 'Tanggal Pelantikan'), e('div', { className: 'input-search' }, e('input', { type: 'date', value: form.tanggal, onChange: (ev) => ubah('tanggal', ev.target.value), required: true }))),
+          e('div', null, labelWajib('Tanggal Pelantikan'), e('div', { className: 'input-search' }, e('input', { type: 'date', value: form.tanggal, onChange: (ev) => ubah('tanggal', ev.target.value), required: true }))),
           e('div', null, e('label', { style: fieldStyle() }, 'Waktu (WIB)'), e('div', { className: 'input-search' }, e('input', { value: form.waktu, onChange: (ev) => ubah('waktu', ev.target.value), placeholder: '10.00' }))),
-          e('div', { style: { gridColumn: '1 / -1' } }, e('label', { style: fieldStyle() }, 'Tempat'), e('div', { className: 'input-search' }, e('input', { value: form.tempat, onChange: (ev) => ubah('tempat', ev.target.value), required: true }))),
+          e('div', { style: { gridColumn: '1 / -1' } }, labelWajib('Tempat'), e('div', { className: 'input-search' }, e('input', { value: form.tempat, onChange: (ev) => ubah('tempat', ev.target.value), required: true }))),
           e('div', { style: { gridColumn: '1 / -1' } }, e('label', { style: fieldStyle() }, 'Perihal / "TENTANG" pada SK'), e('div', { className: 'input-search' }, e('input', { value: form.skTentang, onChange: (ev) => ubah('skTentang', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'Tempat Penetapan SK'), e('div', { className: 'input-search' }, e('input', { value: form.tempatPenetapanSK, onChange: (ev) => ubah('tempatPenetapanSK', ev.target.value) }))),
-          e('div', null, e('label', { style: fieldStyle() }, 'Nama Rohaniwan (opsional)'), e('div', { className: 'input-search' }, e('input', { value: form.rohaniwan, onChange: (ev) => ubah('rohaniwan', ev.target.value) })))
+          e('div', null, e('label', { style: fieldStyle() }, 'Nama Rohaniwan (opsional)'), e('div', { className: 'input-search' }, e('input', { value: form.rohaniwan, onChange: (ev) => ubah('rohaniwan', ev.target.value) }))),
+          e('div', null, e('label', { style: fieldStyle() }, 'Nomor Surat Undangan/Panggilan'), e('div', { className: 'input-search' }, e('input', { value: form.nomorUndangan, onChange: (ev) => ubah('nomorUndangan', ev.target.value), placeholder: 'W.9-KP.04.02\u2013.../2026' })))
         ),
 
-        e('div', { className: 'section-title', style: { fontSize: 13, margin: '4px 0 10px' } }, 'Nomor SK Pengangkatan'),
+        e('div', { className: 'section-title', style: { fontSize: 13, margin: '4px 0 10px' } }, 'Nomor SK Pengangkatan *'),
         form.skList.map((sk, i) =>
           e(
             'div', { key: i, style: { display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' } },
@@ -4993,11 +5312,11 @@ table { border-collapse: collapse; width: 100%; }
         e('div', { className: 'section-title', style: { fontSize: 13, margin: '4px 0 10px' } }, 'Pejabat & Petugas Upacara'),
         e(
           'div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
-          e('div', null, e('label', { style: fieldStyle() }, 'Nama Pejabat Pelantik'),
+          e('div', null, labelWajib('Nama Pejabat Pelantik'),
             e(PegawaiSearchInput, { pegawai, value: form.pejabatPelantik.nama, onChange: (v) => ubahN('pejabatPelantik', 'nama', v), onPilih: (p) => pilihPegawaiN('pejabatPelantik', 'nama', p.nama) })),
           e('div', null, e('label', { style: fieldStyle() }, 'NIP Pejabat Pelantik'), e('div', { className: 'input-search' }, e('input', { value: form.pejabatPelantik.nip, onChange: (ev) => ubahN('pejabatPelantik', 'nip', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'Pangkat/Gol. Pejabat Pelantik'), e('div', { className: 'input-search' }, e('input', { value: form.pejabatPelantik.golongan, onChange: (ev) => ubahN('pejabatPelantik', 'golongan', ev.target.value), placeholder: 'Pembina Utama Madya (IV/d)' }))),
-          e('div', { style: { gridColumn: '1 / -1' } }, e('label', { style: fieldStyle() }, 'Jabatan Pejabat Pelantik'), e('div', { className: 'input-search' }, e('input', { value: form.pejabatPelantik.jabatan, onChange: (ev) => ubahN('pejabatPelantik', 'jabatan', ev.target.value) }))),
+          e('div', { style: { gridColumn: '1 / -1' } }, labelWajib('Jabatan Pejabat Pelantik'), e('div', { className: 'input-search' }, e('input', { value: form.pejabatPelantik.jabatan, onChange: (ev) => ubahN('pejabatPelantik', 'jabatan', ev.target.value) }))),
           e('div', null, e('label', { style: fieldStyle() }, 'Nama Kepala Kantor Wilayah'),
             e(PegawaiSearchInput, { pegawai, value: form.kepalaKantorWilayah.nama, onChange: (v) => ubahN('kepalaKantorWilayah', 'nama', v), onPilih: (p) => pilihPegawaiN('kepalaKantorWilayah', 'nama', p.nama) })),
           e('div', null, e('label', { style: fieldStyle() }, 'Penandatangan SK (a.n. Menteri)'),
@@ -5024,18 +5343,16 @@ table { border-collapse: collapse; width: 100%; }
           e('div', null, e('label', { style: fieldStyle() }, 'Perlengkapan (pisahkan koma)'), e('div', { className: 'input-search' }, e('input', { value: form.petugas.perlengkapan, onChange: (ev) => ubahN('petugas', 'perlengkapan', ev.target.value) })))
         ),
 
-        e('div', { className: 'section-title', style: { fontSize: 13, margin: '4px 0 10px' } }, 'Nomor Surat SPP / SPMT (opsional)'),
-        e(
-          'div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
-          e('div', null, e('label', { style: fieldStyle() }, 'Nomor SPMT'), e('div', { className: 'input-search' }, e('input', { value: form.nomorSPMT, onChange: (ev) => ubah('nomorSPMT', ev.target.value), placeholder: 'W.9-KP.03.01-1444' }))),
-          e('div', null, e('label', { style: fieldStyle() }, 'Nomor SPP'), e('div', { className: 'input-search' }, e('input', { value: form.nomorSPP, onChange: (ev) => ubah('nomorSPP', ev.target.value), placeholder: 'W.9-KP.03.04-3056' })))
-        ),
-
         e('div', { className: 'section-title', style: { fontSize: 13, margin: '16px 0 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-          e('span', null, `Pegawai yang Dilantik (${form.peserta.length})`),
+          e('span', null, `Pegawai yang Dilantik (${form.peserta.length}) *`),
           e('button', { type: 'button', className: 'btn btn-outline', onClick: tambahPeserta }, e(IconPlus, { size: 14 }), 'Tambah Pegawai')
         ),
         !form.peserta.length && e('div', { className: 'import-note' }, 'Belum ada pegawai. Klik "Tambah Pegawai" untuk menambahkan satu per satu \u2014 bisa lebih dari satu orang dalam acara yang sama.'),
+        !!form.peserta.length && e(
+          'div', { className: 'peserta-row peserta-row--head' },
+          e('div', null), e('div', null, 'Nama *'), e('div', null, 'NIP'), e('div', null, 'Pangkat/Gol.'), e('div', null, 'Jabatan Baru *'), e('div', null, 'Unit Kerja Baru'),
+          e('div', null, 'No. SPMT'), e('div', null, 'No. SPP'), e('div', null)
+        ),
         form.peserta.map((p, i) =>
           e(
             'div', { key: i, className: 'peserta-row' },
@@ -5051,6 +5368,8 @@ table { border-collapse: collapse; width: 100%; }
             e('div', { className: 'input-search' }, e('input', { value: p.golongan, onChange: (ev) => ubahPeserta(i, 'golongan', ev.target.value), placeholder: 'Pangkat/Gol. (cth. Penata Tk. I (III/d))' })),
             e('div', { className: 'input-search' }, e('input', { value: p.jabatanBaru, onChange: (ev) => ubahPeserta(i, 'jabatanBaru', ev.target.value), placeholder: 'Jabatan fungsional baru', required: true })),
             e('div', { className: 'input-search' }, e('input', { value: p.unitKerjaBaru, onChange: (ev) => ubahPeserta(i, 'unitKerjaBaru', ev.target.value), placeholder: 'Unit kerja baru' })),
+            e('div', { className: 'input-search' }, e('input', { value: p.nomorSPMT, onChange: (ev) => ubahPeserta(i, 'nomorSPMT', ev.target.value), placeholder: 'No. SPMT (beda tiap orang)' })),
+            e('div', { className: 'input-search' }, e('input', { value: p.nomorSPP, onChange: (ev) => ubahPeserta(i, 'nomorSPP', ev.target.value), placeholder: 'No. SPP (beda tiap orang)' })),
             e('button', { type: 'button', className: 'btn-action-red', onClick: () => hapusPeserta(i), title: 'Hapus peserta' }, e(IconTrash, { size: 13 }))
           )
         ),
@@ -5066,8 +5385,41 @@ table { border-collapse: collapse; width: 100%; }
   }
 
   /* ============================== PANEL UNDUH BERKAS 1-8 (.docx) ============================== */
+  /* ============================== PRATINJAU SATU BERKAS (SEBELUM UNDUH) ============================== */
+  function BerkasPreviewModal({ item, acara, onClose, onUnduh, sedangUnduh }) {
+    const ringkasan = useMemo(() => ringkasanPratinjau(item.kode, acara), [item.kode, acara]);
+    const adaKosong = ringkasan.table && ringkasan.table.rows.some((row) => row.some((v) => v === '' || v === '-' || v === '(belum diisi)'));
+    return e(
+      Modal,
+      { title: `Pratinjau \u2014 ${item.label}`, onClose, wide: true },
+      e('p', { style: { fontSize: 12.5, color: 'var(--color-text-muted)', marginBottom: 14 } },
+        'Periksa data di bawah sebelum diunduh. Ini ringkasan isi berkas, bukan tampilan halaman penuh \u2014 tata letak resmi (kop surat, format, dan penomoran) akan terlihat pada file Word setelah diunduh.'),
+      e(
+        'div', { className: 'preview-fields' },
+        ringkasan.fields.map(([label, value], i) => e('div', { key: i, className: 'preview-fields__row' }, e('span', { className: 'preview-fields__label' }, label), e('span', { className: 'preview-fields__value' }, value)))
+      ),
+      ringkasan.table && e(
+        'div', { className: 'table-wrap', style: { marginTop: 14 } },
+        e('table', { className: 'data-table' },
+          e('thead', null, e('tr', null, ringkasan.table.head.map((h, i) => e('th', { key: i }, h)))),
+          e('tbody', null, ringkasan.table.rows.length
+            ? ringkasan.table.rows.map((row, ri) => e('tr', { key: ri }, row.map((v, ci) => e('td', { key: ci, 'data-label': ringkasan.table.head[ci] }, v))))
+            : e('tr', null, e('td', { colSpan: ringkasan.table.head.length, style: { textAlign: 'center', color: 'var(--color-text-faint)' } }, 'Belum ada peserta.')))
+        )
+      ),
+      ringkasan.catatan && e('div', { className: 'import-note', style: { marginTop: 14 } }, ringkasan.catatan),
+      adaKosong && e('div', { className: 'login-error', style: { marginTop: 10 } }, 'Ada data yang masih kosong pada tabel di atas \u2014 berkas tetap bisa diunduh, tapi sebaiknya dilengkapi dulu supaya tidak ada bagian kosong di dokumen.'),
+      e(
+        'div', { style: { display: 'flex', gap: 10, marginTop: 20 } },
+        e('button', { type: 'button', className: 'btn btn-primary', disabled: sedangUnduh, onClick: onUnduh }, e(IconDownload, { size: 15 }), sedangUnduh ? 'Membuat berkas...' : 'Sudah Benar, Unduh .docx'),
+        e('button', { type: 'button', className: 'btn btn-outline', onClick: onClose }, 'Kembali')
+      )
+    );
+  }
+
   function BerkasGeneratorModal({ acara, onClose, showToast }) {
     const [mengunduh, setMengunduh] = useState(null);
+    const [previewItem, setPreviewItem] = useState(null);
 
     async function unduh(item) {
       try {
@@ -5076,6 +5428,7 @@ table { border-collapse: collapse; width: 100%; }
         const doc = item.build(acara);
         await unduhDocx(doc, namaAcaraFile(acara, item.file));
         showToast(`${item.label} berhasil diunduh (.docx).`);
+        setPreviewItem(null);
       } catch (err) {
         showToast(err && err.message ? err.message : 'Gagal membuat berkas .docx.');
       } finally {
@@ -5084,6 +5437,7 @@ table { border-collapse: collapse; width: 100%; }
     }
 
     async function unduhSemua() {
+      if (!window.confirm(`Unduh seluruh ${BERKAS_PELANTIKAN_TYPES.length} berkas (Undangan, Lembar 1-8, SPMT, SPP) untuk ${acara.peserta.length} pegawai sekaligus? Disarankan cek dulu berkas SPMT/SPP satu-satu (tombol "Lihat & Unduh") karena nomornya berbeda tiap orang.`)) return;
       for (const item of BERKAS_PELANTIKAN_TYPES) {
         // eslint-disable-next-line no-await-in-loop
         await unduh(item);
@@ -5100,7 +5454,7 @@ table { border-collapse: collapse; width: 100%; }
         { className: 'import-note', style: { marginBottom: 14 } },
         `Acara: ${acara.tempat || '-'} \u2014 ${acara.tanggal ? new Date(`${acara.tanggal}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : 'tanggal belum diisi'}. `,
         e('strong', null, `${acara.peserta.length} pegawai dilantik`),
-        '. Setiap berkas otomatis memuat seluruh nama di atas dan mengikuti format resmi Kanwil (kop surat & logo Pengayoman sudah termuat) \u2014 tinggal diunduh dan siap cetak.'
+        '. Klik "Lihat & Unduh" untuk memeriksa data tiap berkas dulu sebelum benar-benar mengunduh file .docx-nya.'
       ),
       e('div', { className: 'acara-card__peserta', style: { marginBottom: 6 } }, acara.peserta.map((p, i) => e('span', { key: i, className: 'peserta-chip' }, p.nama))),
       e(
@@ -5111,14 +5465,18 @@ table { border-collapse: collapse; width: 100%; }
             'div', { key: item.kode, className: 'berkas-item' },
             e('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } }, e('div', { className: 'berkas-item__num' }, item.id), e('h4', { className: 'berkas-item__title' }, item.label)),
             e('p', { className: 'berkas-item__desc' }, item.desc),
-            e('button', { type: 'button', className: 'btn btn-outline', disabled: mengunduh === item.kode, onClick: () => unduh(item) },
-              e(IconDownload, { size: 14 }), mengunduh === item.kode ? 'Membuat...' : 'Unduh .docx')
+            e('button', { type: 'button', className: 'btn btn-outline', disabled: mengunduh === item.kode, onClick: () => setPreviewItem(item) },
+              e(IconSearch, { size: 14 }), mengunduh === item.kode ? 'Membuat...' : 'Lihat & Unduh')
           )
         )
       ),
       e('div', { style: { display: 'flex', gap: 10, marginTop: 18 } },
         e('button', { type: 'button', className: 'btn btn-primary', onClick: unduhSemua }, e(IconDownload, { size: 15 }), 'Unduh Semua (1-8 + SPP/SPMT)'),
-        e('button', { type: 'button', className: 'btn btn-outline', onClick: onClose }, 'Tutup'))
+        e('button', { type: 'button', className: 'btn btn-outline', onClick: onClose }, 'Tutup')),
+      previewItem && e(BerkasPreviewModal, {
+        item: previewItem, acara, sedangUnduh: mengunduh === previewItem.kode,
+        onClose: () => setPreviewItem(null), onUnduh: () => unduh(previewItem),
+      })
     );
   }
 
@@ -5190,7 +5548,6 @@ table { border-collapse: collapse; width: 100%; }
     const [tab, setTab] = useState('jadwal');
     const [daftar, setDaftar] = useState(() => muatPelantikan());
     const [formState, setFormState] = useState(null);
-    const [undanganUntuk, setUndanganUntuk] = useState(null);
     const [query, setQuery] = useState('');
 
     const terurut = useMemo(() => [...daftar].sort((a, b) => (a.tanggal || '').localeCompare(b.tanggal || '')), [daftar]);
@@ -5222,13 +5579,13 @@ table { border-collapse: collapse; width: 100%; }
       e(
         'div',
         { className: 'page-header' },
-        e('div', null, e('h1', null, 'Persiapan Pelantikan'), e('p', null, 'Jadwal, undangan, checklist, dan berkas persiapan pelantikan pejabat/pegawai \u2014 mendukung pelantikan banyak pegawai sekaligus.')),
+        e('div', null, e('h1', null, 'Persiapan Pelantikan'), e('p', null, 'Jadwal, checklist, dan berkas persiapan pelantikan pejabat/pegawai \u2014 mendukung pelantikan banyak pegawai sekaligus.')),
         tab === 'jadwal' && e('button', { className: 'btn btn-primary', onClick: () => setFormState({ initial: null }) }, e(IconPlus, { size: 15 }), 'Tambah Jadwal Pelantikan')
       ),
       e(
         'div',
         { className: 'tab-bar' },
-        e('button', { className: `tab-btn ${tab === 'jadwal' ? 'active' : ''}`, onClick: () => setTab('jadwal') }, 'Jadwal & Undangan'),
+        e('button', { className: `tab-btn ${tab === 'jadwal' ? 'active' : ''}`, onClick: () => setTab('jadwal') }, 'Status per Pegawai'),
         e('button', { className: `tab-btn ${tab === 'berkas' ? 'active' : ''}`, onClick: () => setTab('berkas') }, 'Berkas Persiapan (1-8)'),
         e('button', { className: `tab-btn ${tab === 'checklist' ? 'active' : ''}`, onClick: () => setTab('checklist') }, 'Checklist Persiapan')
       ),
@@ -5238,6 +5595,13 @@ table { border-collapse: collapse; width: 100%; }
         e(
           'div',
           null,
+          e(
+            'div',
+            { className: 'import-note' },
+            'Tab ini hanya untuk mencatat status tiap pegawai (Draft/Terjadwal/Selesai). Untuk mencetak Undangan/Panggilan, SK, Naskah, SPP/SPMT, dan berkas lain, gunakan tab ',
+            e('strong', null, '"Berkas Persiapan (1-8)"'),
+            ' \u2014 semua peserta pelantikan bisa digabung dalam satu acara dan satu surat undangan dengan daftar nama terlampir, bukan dicetak satu per satu.'
+          ),
           e(
             'div',
             { className: 'filter-bar' },
@@ -5274,7 +5638,6 @@ table { border-collapse: collapse; width: 100%; }
                           e(
                             'td',
                             { 'data-label': '', style: { display: 'flex', gap: 6 } },
-                            e('button', { className: 'btn-action-green', onClick: () => setUndanganUntuk(d), title: 'Cetak Undangan' }, e(IconMail, { size: 13 })),
                             e('button', { className: 'btn-action-green', onClick: () => setFormState({ initial: d }), title: 'Edit' }, e(IconEdit, { size: 13 })),
                             e('button', { className: 'btn-action-red', onClick: () => handleDelete(d), title: 'Hapus' }, e(IconTrash, { size: 13 }))
                           )
@@ -5286,8 +5649,7 @@ table { border-collapse: collapse; width: 100%; }
             )
           )
         ),
-      formState && e(PelantikanForm, { initial: formState.initial, pegawai, onClose: () => setFormState(null), onSave: handleSave }),
-      undanganUntuk && e(UndanganPelantikanForm, { data: undanganUntuk, pegawai, onClose: () => setUndanganUntuk(null) })
+      formState && e(PelantikanForm, { initial: formState.initial, pegawai, onClose: () => setFormState(null), onSave: handleSave })
     );
   }
 
